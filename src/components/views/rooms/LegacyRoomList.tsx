@@ -43,7 +43,6 @@ import { objectShallowClone, objectWithOnly } from "../../../utils/objects.ts";
 import type ResizeNotifier from "../../../utils/ResizeNotifier.ts";
 import {
     shouldShowSpaceInvite,
-    showAddExistingRooms,
     showCreateNewRoom,
     showSpaceInvite,
 } from "../../../utils/space.tsx";
@@ -277,18 +276,18 @@ const UntaggedAuxButton: React.FC<IAuxButtonProps> = ({ tabIndex }) => {
                                 <BetaPill />
                             </IconizedContextMenuOption>
                         )}
-                        <IconizedContextMenuOption
-                            label={_t("action|add_existing_room")}
-                            iconClassName="mx_LegacyRoomList_iconAddExistingRoom"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                closeMenu();
-                                showAddExistingRooms(activeSpace);
-                            }}
-                            disabled={!canAddRooms}
-                            title={canAddRooms ? undefined : _t("spaces|error_no_permission_add_room")}
-                        />
+                        {/*<IconizedContextMenuOption*/}
+                        {/*    label={_t("action|add_existing_room")}*/}
+                        {/*    iconClassName="mx_LegacyRoomList_iconAddExistingRoom"*/}
+                        {/*    onClick={(e) => {*/}
+                        {/*        e.preventDefault();*/}
+                        {/*        e.stopPropagation();*/}
+                        {/*        closeMenu();*/}
+                        {/*        showAddExistingRooms(activeSpace);*/}
+                        {/*    }}*/}
+                        {/*    disabled={!canAddRooms}*/}
+                        {/*    title={canAddRooms ? undefined : _t("spaces|error_no_permission_add_room")}*/}
+                        {/*/>*/}
                     </>
                 ) : null}
             </IconizedContextMenuOptionList>

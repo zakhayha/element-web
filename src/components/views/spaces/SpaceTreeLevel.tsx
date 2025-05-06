@@ -83,9 +83,15 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
     const spaceKey = _spaceKey ?? space?.roomId;
 
     let avatar = (
-        <div className="mx_SpaceButton_avatarPlaceholder">
-            <div className="mx_SpaceButton_icon" />
-        </div>
+        label === "Home" ? (
+            <div className="mx_SpaceButton_avatarPlaceholder">
+                <div className="mx_SpaceButton_icon" />
+            </div>
+        ) : (
+            <div className="mx_SpaceButton_avatarPlaceholder">
+                <div className="mx_SpaceButton_icon" />
+            </div>
+        )
     );
     if (space) {
         avatar = <RoomAvatar size={size} room={space} type="square" />;
@@ -158,7 +164,13 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
                     {avatar}
                     {notifBadge}
                 </div>
-                {!isNarrow && <span className="mx_SpaceButton_name">{label}</span>}
+                {!isNarrow && (
+                    label === "Home" ? (
+                        <span className="mx_SpaceButton_name_custom">iluvatar</span>
+                    ) : (
+                        <span className="mx_SpaceButton_name">{label}</span>
+                    )
+                )}
 
                 {ContextMenuComponent && (
                     <ContextMenuTooltipButton

@@ -116,11 +116,11 @@ export default class PasswordLogin extends React.PureComponent<IProps, IState> {
         this.props.onUsernameBlur?.(ev.target.value);
     };
 
-    private onLoginTypeChange = (ev: React.ChangeEvent<HTMLSelectElement>): void => {
-        const loginType = ev.target.value as IState["loginType"];
-        this.setState({ loginType });
-        this.props.onUsernameChanged?.(""); // Reset because email and username use the same state
-    };
+    // private onLoginTypeChange = (ev: React.ChangeEvent<HTMLSelectElement>): void => {
+    //     const loginType = ev.target.value as IState["loginType"];
+    //     this.setState({ loginType });
+    //     this.props.onUsernameChanged?.(""); // Reset because email and username use the same state
+    // };
 
     private onPhoneCountryChanged = (country: PhoneNumberCountryDefinition): void => {
         this.props.onPhoneCountryChanged?.(country.iso2);
@@ -389,23 +389,23 @@ export default class PasswordLogin extends React.PureComponent<IProps, IState> {
         if (!SdkConfig.get().disable_3pid_login) {
             loginType = (
                 <div className="mx_Login_type_container">
-                    <label className="mx_Login_type_label">{_t("auth|identifier_label")}</label>
-                    <Field
-                        element="select"
-                        value={this.state.loginType}
-                        onChange={this.onLoginTypeChange}
-                        disabled={this.props.busy}
-                    >
-                        <option key={LoginField.MatrixId} value={LoginField.MatrixId}>
-                            {_t("common|username")}
-                        </option>
-                        <option key={LoginField.Email} value={LoginField.Email}>
-                            {_t("common|email_address")}
-                        </option>
-                        <option key={LoginField.Password} value={LoginField.Password}>
-                            {_t("auth|msisdn_field_label")}
-                        </option>
-                    </Field>
+                    {/*<label className="mx_Login_type_label">{_t("auth|identifier_label")}</label>*/}
+                    {/*<Field*/}
+                    {/*    element="select"*/}
+                    {/*    value={this.state.loginType}*/}
+                    {/*    onChange={this.onLoginTypeChange}*/}
+                    {/*    disabled={this.props.busy}*/}
+                    {/*>*/}
+                    {/*    <option key={LoginField.MatrixId} value={LoginField.MatrixId}>*/}
+                    {/*        {_t("common|username")}*/}
+                    {/*    </option>*/}
+                    {/*    <option key={LoginField.Email} value={LoginField.Email}>*/}
+                    {/*        {_t("common|email_address")}*/}
+                    {/*    </option>*/}
+                    {/*    <option key={LoginField.Password} value={LoginField.Password}>*/}
+                    {/*        {_t("auth|msisdn_field_label")}*/}
+                    {/*    </option>*/}
+                    {/*</Field>*/}
                 </div>
             );
         }

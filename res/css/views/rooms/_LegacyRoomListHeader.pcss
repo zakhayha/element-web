@@ -5,7 +5,9 @@ Copyright 2021 The Matrix.org Foundation C.I.C.
 SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
-
+.mx_AccessibleButton .mx_IconizedContextMenu_item[aria-label="Add existing room"] {
+    display: none !important;
+}
 .mx_LegacyRoomListHeader {
     display: flex;
     align-items: center;
@@ -23,7 +25,18 @@ Please see LICENSE files in the repository root for full details.
         margin-right: auto;
         user-select: none;
     }
-
+    .mx_LegacyRoomListHeader_contextMenuButton_custom {
+        font: var(--cpd-font-heading-sm-semibold);
+        font-weight: var(--cpd-font-weight-semibold);
+        padding: 1px 24px 1px 4px;
+        position: relative;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-left: 8px;
+        margin-right: auto;
+        user-select: none;
+    }
     .mx_LegacyRoomListHeader_contextMenuButton {
         border-radius: 6px;
 

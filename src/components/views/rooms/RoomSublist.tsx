@@ -25,7 +25,6 @@ import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import { _t } from "../../../languageHandler";
 import { type ListNotificationState } from "../../../stores/notifications/ListNotificationState";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
-import { ListAlgorithm, SortAlgorithm } from "../../../stores/room-list/algorithms/models";
 import { type ListLayout } from "../../../stores/room-list/ListLayout";
 import { DefaultTagID, type TagID } from "../../../stores/room-list/models";
 import RoomListLayoutStore from "../../../stores/room-list/RoomListLayoutStore";
@@ -33,13 +32,7 @@ import RoomListStore, { LISTS_UPDATE_EVENT, LISTS_LOADING_EVENT } from "../../..
 import { arrayFastClone, arrayHasOrderChange } from "../../../utils/arrays";
 import { objectExcluding, objectHasDiff } from "../../../utils/objects";
 import type ResizeNotifier from "../../../utils/ResizeNotifier";
-import ContextMenu, {
-    ChevronFace,
-    ContextMenuTooltipButton,
-    StyledMenuItemCheckbox,
-    StyledMenuItemRadio,
-} from "../../structures/ContextMenu";
-import AccessibleButton, { type ButtonEvent } from "../../views/elements/AccessibleButton";
+import AccessibleButton from "../../views/elements/AccessibleButton";
 import type ExtraTile from "./ExtraTile";
 import NotificationBadge from "./NotificationBadge";
 import RoomTile from "./RoomTile";
@@ -344,12 +337,12 @@ export default class RoomSublist extends React.Component<IProps, IState> {
         }
     };
 
-    private onOpenMenuClick = (ev: ButtonEvent): void => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const target = ev.target as HTMLButtonElement;
-        this.setState({ contextMenuPosition: target.getBoundingClientRect() });
-    };
+    // private onOpenMenuClick = (ev: ButtonEvent): void => {
+    //     ev.preventDefault();
+    //     ev.stopPropagation();
+    //     const target = ev.target as HTMLButtonElement;
+    //     this.setState({ contextMenuPosition: target.getBoundingClientRect() });
+    // };
 
     private onContextMenu = (ev: React.MouseEvent): void => {
         ev.preventDefault();
@@ -363,26 +356,26 @@ export default class RoomSublist extends React.Component<IProps, IState> {
         });
     };
 
-    private onCloseMenu = (): void => {
-        this.setState({ contextMenuPosition: undefined });
-    };
+    // private onCloseMenu = (): void => {
+    //     this.setState({ contextMenuPosition: undefined });
+    // };
 
-    private onUnreadFirstChanged = (): void => {
-        const isUnreadFirst = RoomListStore.instance.getListOrder(this.props.tagId) === ListAlgorithm.Importance;
-        const newAlgorithm = isUnreadFirst ? ListAlgorithm.Natural : ListAlgorithm.Importance;
-        RoomListStore.instance.setListOrder(this.props.tagId, newAlgorithm);
-        this.forceUpdate(); // because if the sublist doesn't have any changes then we will miss the list order change
-    };
-
-    private onTagSortChanged = async (sort: SortAlgorithm): Promise<void> => {
-        RoomListStore.instance.setTagSorting(this.props.tagId, sort);
-        this.forceUpdate();
-    };
-
-    private onMessagePreviewChanged = (): void => {
-        this.layout.showPreviews = !this.layout.showPreviews;
-        this.forceUpdate(); // because the layout doesn't trigger a re-render
-    };
+    // private onUnreadFirstChanged = (): void => {
+    //     const isUnreadFirst = RoomListStore.instance.getListOrder(this.props.tagId) === ListAlgorithm.Importance;
+    //     const newAlgorithm = isUnreadFirst ? ListAlgorithm.Natural : ListAlgorithm.Importance;
+    //     RoomListStore.instance.setListOrder(this.props.tagId, newAlgorithm);
+    //     this.forceUpdate(); // because if the sublist doesn't have any changes then we will miss the list order change
+    // };
+    //
+    // private onTagSortChanged = async (sort: SortAlgorithm): Promise<void> => {
+    //     RoomListStore.instance.setTagSorting(this.props.tagId, sort);
+    //     this.forceUpdate();
+    // };
+    //
+    // private onMessagePreviewChanged = (): void => {
+    //     this.layout.showPreviews = !this.layout.showPreviews;
+    //     this.forceUpdate(); // because the layout doesn't trigger a re-render
+    // };
 
     private onBadgeClick = (ev: React.MouseEvent): void => {
         ev.preventDefault();
@@ -536,80 +529,80 @@ export default class RoomSublist extends React.Component<IProps, IState> {
     private renderMenu(): ReactNode {
         if (this.props.tagId === DefaultTagID.Suggested) return null; // not sortable
 
-        let contextMenu: JSX.Element | undefined;
+        // let contextMenu: JSX.Element | undefined;
         if (this.state.contextMenuPosition) {
-            const isAlphabetical = RoomListStore.instance.getTagSorting(this.props.tagId) === SortAlgorithm.Alphabetic;
-            const isUnreadFirst = RoomListStore.instance.getListOrder(this.props.tagId) === ListAlgorithm.Importance;
+            // const isAlphabetical = RoomListStore.instance.getTagSorting(this.props.tagId) === SortAlgorithm.Alphabetic;
+            // const isUnreadFirst = RoomListStore.instance.getListOrder(this.props.tagId) === ListAlgorithm.Importance;
 
             // Invites don't get some nonsense options, so only add them if we have to.
-            let otherSections: JSX.Element | undefined;
-            if (this.props.tagId !== DefaultTagID.Invite) {
-                otherSections = (
-                    <React.Fragment>
-                        <hr />
-                        <fieldset>
-                            <legend className="mx_RoomSublist_contextMenu_title">{_t("common|appearance")}</legend>
-                            <StyledMenuItemCheckbox
-                                onClose={this.onCloseMenu}
-                                onChange={this.onUnreadFirstChanged}
-                                checked={isUnreadFirst}
-                            >
-                                {_t("room_list|sort_unread_first")}
-                            </StyledMenuItemCheckbox>
-                            <StyledMenuItemCheckbox
-                                onClose={this.onCloseMenu}
-                                onChange={this.onMessagePreviewChanged}
-                                checked={this.layout.showPreviews}
-                            >
-                                {_t("room_list|show_previews")}
-                            </StyledMenuItemCheckbox>
-                        </fieldset>
-                    </React.Fragment>
-                );
-            }
+            // let otherSections: JSX.Element | undefined;
+            // if (this.props.tagId !== DefaultTagID.Invite) {
+            //     otherSections = (
+            //         <React.Fragment>
+            //             <hr />
+            //             <fieldset>
+            //                 <legend className="mx_RoomSublist_contextMenu_title">{_t("common|appearance")}</legend>
+            //                 <StyledMenuItemCheckbox
+            //                     onClose={this.onCloseMenu}
+            //                     onChange={this.onUnreadFirstChanged}
+            //                     checked={isUnreadFirst}
+            //                 >
+            //                     {_t("room_list|sort_unread_first")}
+            //                 </StyledMenuItemCheckbox>
+            //                 <StyledMenuItemCheckbox
+            //                     onClose={this.onCloseMenu}
+            //                     onChange={this.onMessagePreviewChanged}
+            //                     checked={this.layout.showPreviews}
+            //                 >
+            //                     {_t("room_list|show_previews")}
+            //                 </StyledMenuItemCheckbox>
+            //             </fieldset>
+            //         </React.Fragment>
+            //     );
+            // }
 
-            contextMenu = (
-                <ContextMenu
-                    chevronFace={ChevronFace.None}
-                    left={this.state.contextMenuPosition.left}
-                    top={this.state.contextMenuPosition.top + this.state.contextMenuPosition.height}
-                    onFinished={this.onCloseMenu}
-                >
-                    <div className="mx_RoomSublist_contextMenu">
-                        <fieldset>
-                            <legend className="mx_RoomSublist_contextMenu_title">{_t("room_list|sort_by")}</legend>
-                            <StyledMenuItemRadio
-                                onClose={this.onCloseMenu}
-                                onChange={() => this.onTagSortChanged(SortAlgorithm.Recent)}
-                                checked={!isAlphabetical}
-                                name={`mx_${this.props.tagId}_sortBy`}
-                            >
-                                {_t("room_list|sort_by_activity")}
-                            </StyledMenuItemRadio>
-                            <StyledMenuItemRadio
-                                onClose={this.onCloseMenu}
-                                onChange={() => this.onTagSortChanged(SortAlgorithm.Alphabetic)}
-                                checked={isAlphabetical}
-                                name={`mx_${this.props.tagId}_sortBy`}
-                            >
-                                {_t("room_list|sort_by_alphabet")}
-                            </StyledMenuItemRadio>
-                        </fieldset>
-                        {otherSections}
-                    </div>
-                </ContextMenu>
-            );
+            // contextMenu = (
+            //     <ContextMenu
+            //         chevronFace={ChevronFace.None}
+            //         left={this.state.contextMenuPosition.left}
+            //         top={this.state.contextMenuPosition.top + this.state.contextMenuPosition.height}
+            //         onFinished={this.onCloseMenu}
+            //     >
+            //         <div className="mx_RoomSublist_contextMenu">
+            //             <fieldset>
+            //                 <legend className="mx_RoomSublist_contextMenu_title">{_t("room_list|sort_by")}</legend>
+            //                 <StyledMenuItemRadio
+            //                     onClose={this.onCloseMenu}
+            //                     onChange={() => this.onTagSortChanged(SortAlgorithm.Recent)}
+            //                     checked={!isAlphabetical}
+            //                     name={`mx_${this.props.tagId}_sortBy`}
+            //                 >
+            //                     {_t("room_list|sort_by_activity")}
+            //                 </StyledMenuItemRadio>
+            //                 <StyledMenuItemRadio
+            //                     onClose={this.onCloseMenu}
+            //                     onChange={() => this.onTagSortChanged(SortAlgorithm.Alphabetic)}
+            //                     checked={isAlphabetical}
+            //                     name={`mx_${this.props.tagId}_sortBy`}
+            //                 >
+            //                     {_t("room_list|sort_by_alphabet")}
+            //                 </StyledMenuItemRadio>
+            //             </fieldset>
+            //             {otherSections}
+            //         </div>
+            //     </ContextMenu>
+            // );
         }
 
         return (
             <React.Fragment>
-                <ContextMenuTooltipButton
-                    className="mx_RoomSublist_menuButton"
-                    onClick={this.onOpenMenuClick}
-                    title={_t("room_list|sublist_options")}
-                    isExpanded={!!this.state.contextMenuPosition}
-                />
-                {contextMenu}
+                {/*<ContextMenuTooltipButton*/}
+                {/*    className="mx_RoomSublist_menuButton"*/}
+                {/*    onClick={this.onOpenMenuClick}*/}
+                {/*    title={_t("room_list|sublist_options")}*/}
+                {/*    isExpanded={!!this.state.contextMenuPosition}*/}
+                {/*/>*/}
+                {/*{contextMenu}*/}
             </React.Fragment>
         );
     }

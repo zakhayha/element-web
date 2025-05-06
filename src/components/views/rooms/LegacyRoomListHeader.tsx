@@ -38,7 +38,6 @@ import {
 } from "../../../utils/space";
 import {
     ChevronFace,
-    ContextMenuButton,
     ContextMenuTooltipButton,
     type MenuProps,
     useContextMenu,
@@ -111,7 +110,7 @@ interface IProps {
 const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
     const cli = useContext(MatrixClientContext);
     const [mainMenuDisplayed, mainMenuHandle, openMainMenu, closeMainMenu] = useContextMenu<HTMLDivElement>();
-    const [plusMenuDisplayed, plusMenuHandle, openPlusMenu, closePlusMenu] = useContextMenu<HTMLDivElement>();
+    const [plusMenuDisplayed, plusMenuHandle, closePlusMenu] = useContextMenu<HTMLDivElement>();
     const [spaceKey, activeSpace] = useEventEmitterState<[SpaceKey, Room | null]>(
         SpaceStore.instance,
         UPDATE_SELECTED_SPACE,
@@ -153,7 +152,7 @@ const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
     // If the user can't do anything on the plus menu, don't show it. This aims to target the
     // plus menu shown on the Home tab primarily: the user has options to use the menu for
     // communities and spaces, but is at risk of no options on the Home tab.
-    const canShowPlusMenu = canCreateRooms || canExploreRooms || canCreateSpaces || activeSpace;
+    // const canShowPlusMenu = canCreateRooms || canExploreRooms || canCreateSpaces || activeSpace;
 
     let contextMenu: JSX.Element | undefined;
     if (mainMenuDisplayed && mainMenuHandle.current) {
@@ -390,10 +389,15 @@ const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
 
         if (!!activeSpace) {
             contextMenuButton = (
-                <ContextMenuButton
-                    {...commonProps}
-                    label={_t("room_list|space_menu_label", { spaceName: spaceName ?? activeSpace.name })}
-                />
+                // <ContextMenuButton
+                //     {...commonProps}
+                //     label={_t("room_list|space_menu_label", { spaceName: spaceName ?? activeSpace.name })}
+                // />
+            <div className="mx_LegacyRoomListHeader_contextMenuButton_custom">
+                <div className="mx_LegacyRoomListHeader">
+                    {_t("room_list|space_menu_label", { spaceName: spaceName ?? activeSpace.name })}
+                </div>
+            </div>
             );
         } else {
             contextMenuButton = <ContextMenuTooltipButton {...commonProps} title={_t("room_list|home_menu_label")} />;
@@ -408,15 +412,15 @@ const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
                     <InlineSpinner />
                 </Tooltip>
             ) : null}
-            {canShowPlusMenu && (
-                <ContextMenuTooltipButton
-                    ref={plusMenuHandle}
-                    onClick={openPlusMenu}
-                    isExpanded={plusMenuDisplayed}
-                    className="mx_LegacyRoomListHeader_plusButton"
-                    title={_t("action|add")}
-                />
-            )}
+            {/*{canShowPlusMenu && (*/}
+            {/*    <ContextMenuTooltipButton*/}
+            {/*        ref={plusMenuHandle}*/}
+            {/*        onClick={openPlusMenu}*/}
+            {/*        isExpanded={plusMenuDisplayed}*/}
+            {/*        className="mx_LegacyRoomListHeader_plusButton"*/}
+            {/*        title={_t("action|add")}*/}
+            {/*    />*/}
+            {/*)}*/}
 
             {contextMenu}
         </aside>

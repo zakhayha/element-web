@@ -14,7 +14,7 @@ Please see LICENSE files in the repository root for full details.
     --height-nested: 24px;
     --height-topLevel: 32px;
 
-    background-color: $spacePanel-bg-color;
+    background-color: $iluvatar-color-chat-side-left-main;
     flex: 0 0 auto;
     padding: 0;
     margin: 0;
@@ -113,6 +113,7 @@ Please see LICENSE files in the repository root for full details.
     .mx_SpaceItem:not(.hasSubSpaces) > .mx_SpaceButton {
         margin-left: var(--gutterSize);
         min-width: 40px;
+        margin-top: 8px;
     }
 
     .mx_SpaceButton {
@@ -171,7 +172,16 @@ Please see LICENSE files in the repository root for full details.
             background-color: $tertiary-content;
             mask-image: url("@vector-im/compound-design-tokens/icons/chevron-down.svg");
         }
-
+        .mx_SpaceButton_name_custom {
+            flex: 1;
+            margin-left: 8px;
+            white-space: nowrap;
+            display: block;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            font-weight: bold;
+            color: $iluvatar-color;
+        }
         .mx_SpaceButton_icon {
             width: var(--height-topLevel);
             min-width: var(--height-topLevel);
@@ -201,13 +211,13 @@ Please see LICENSE files in the repository root for full details.
                 background-color: $panel-actions;
 
                 &::before {
-                    background-color: $secondary-content;
+                    background-color: $iluvatar-color;
                 }
             }
         }
 
         &.mx_SpaceButton_home .mx_SpaceButton_icon::before {
-            mask-image: url("@vector-im/compound-design-tokens/icons/home-solid.svg");
+            mask-image: url("@vector-im/compound-design-tokens/icons/apple-icon.png");
         }
 
         &.mx_SpaceButton_favourites .mx_SpaceButton_icon::before {
@@ -228,7 +238,7 @@ Please see LICENSE files in the repository root for full details.
 
         &.mx_SpaceButton_new .mx_SpaceButton_icon {
             &::before {
-                background-color: $primary-content;
+                background-color: $iluvatar-color-chat-icon;
                 mask-image: url("@vector-im/compound-design-tokens/icons/plus.svg");
                 transition: all 0.2s ease-in-out; /* TODO transition */
             }

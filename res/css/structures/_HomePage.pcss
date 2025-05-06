@@ -53,7 +53,6 @@ Please see LICENSE files in the repository root for full details.
 
         .mx_AccessibleButton {
             padding: 73px 8px 15px; /* top: 20px top padding + 40px icon + 13px margin */
-
             width: 160px;
             min-height: 132px;
             margin: 20px;
@@ -67,8 +66,8 @@ Please see LICENSE files in the repository root for full details.
             font-weight: var(--cpd-font-weight-semibold);
             font-size: $font-15px;
             line-height: $font-20px;
-            color: #fff; /* on all themes */
-            background-color: $accent;
+            color: $iluvatar-color-chat-txt; /* on all themes */
+            background-color: $iluvatar-color-chat-btn;
 
             &::before {
                 top: 20px;
@@ -78,7 +77,7 @@ Please see LICENSE files in the repository root for full details.
 
                 content: "";
                 position: absolute;
-                background-color: #fff; /* on all themes */
+                background-color: $iluvatar-color-chat-txt; /* on all themes */
                 mask-repeat: no-repeat;
                 mask-size: contain;
             }
@@ -94,6 +93,10 @@ Please see LICENSE files in the repository root for full details.
             &.mx_HomePage_button_createGroup::before {
                 mask-image: url("$(res)/img/element-icons/group-members.svg");
             }
+        }
+        .mx_AccessibleButton:hover {
+            background-color: $iluvatar-color-chat-btn-hover;
+            transition: background-color 0.2s ease-in-out;
         }
     }
 }
