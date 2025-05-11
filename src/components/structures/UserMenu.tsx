@@ -21,7 +21,8 @@ import FeedbackDialog from "../views/dialogs/FeedbackDialog";
 import Modal from "../../Modal";
 import LogoutDialog, { shouldShowLogoutDialog } from "../views/dialogs/LogoutDialog";
 import SettingsStore from "../../settings/SettingsStore";
-import { getCustomTheme, isHighContrastTheme } from "../../theme";
+import { findHighContrastTheme, getCustomTheme, isHighContrastTheme } from "../../theme";
+import { RovingAccessibleButton } from "../../accessibility/RovingTabIndex";
 import AccessibleButton, { type ButtonEvent } from "../views/elements/AccessibleButton";
 import SdkConfig from "../../SdkConfig";
 import { getHomePageUrl } from "../../utils/pages";
@@ -39,6 +40,9 @@ import UserIdentifierCustomisations from "../../customisations/UserIdentifier";
 import { type ViewHomePagePayload } from "../../dispatcher/payloads/ViewHomePagePayload";
 import { SDKContext } from "../../contexts/SDKContext";
 import { shouldShowFeedback } from "../../utils/Feedback";
+import { SettingLevel } from "../../settings/SettingLevel";
+import PosthogTrackers from "../../PosthogTrackers";
+import DarkLightModeSvg from "../../../res/img/element-icons/roomlist/dark-light-mode.svg";
 
 interface IProps {
     isPanelCollapsed: boolean;
@@ -187,24 +191,24 @@ export default class UserMenu extends React.Component<IProps, IState> {
         this.setState({ contextMenuPosition: null });
     };
 
-    // private onSwitchThemeClick = (ev: ButtonEvent): void => {
-    //     ev.preventDefault();
-    //     ev.stopPropagation();
-    //
-    //     PosthogTrackers.trackInteraction("WebUserMenuThemeToggleButton", ev);
-    //
-    //     // Disable system theme matching if the user hits this button
-    //     SettingsStore.setValue("use_system_theme", null, SettingLevel.DEVICE, false);
-    //
-    //     let newTheme = this.state.isDarkTheme ? "light" : "dark";
-    //     if (this.state.isHighContrast) {
-    //         const hcTheme = findHighContrastTheme(newTheme);
-    //         if (hcTheme) {
-    //             newTheme = hcTheme;
-    //         }
-    //     }
-    //     SettingsStore.setValue("theme", null, SettingLevel.DEVICE, newTheme); // set at same level as Appearance tab
-    // };
+    private onSwitchThemeClick = (ev: ButtonEvent): void => {
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        PosthogTrackers.trackInteraction("WebUserMenuThemeToggleButton", ev);
+
+        // Disable system theme matching if the user hits this button
+        SettingsStore.setValue("use_system_theme", null, SettingLevel.DEVICE, false);
+
+        let newTheme = this.state.isDarkTheme ? "light" : "dark";
+        if (this.state.isHighContrast) {
+            const hcTheme = findHighContrastTheme(newTheme);
+            if (hcTheme) {
+                newTheme = hcTheme;
+            }
+        }
+        SettingsStore.setValue("theme", null, SettingLevel.DEVICE, newTheme); // set at same level as Appearance tab
+    };
 
     private onSettingsOpen = (ev: ButtonEvent, tabId?: string, props?: Record<string, any>): void => {
         ev.preventDefault();
@@ -385,17 +389,17 @@ export default class UserMenu extends React.Component<IProps, IState> {
                         </span>
                     </div>
 
-                    {/*<RovingAccessibleButton*/}
-                    {/*    className="mx_UserMenu_contextMenu_themeButton"*/}
-                    {/*    onClick={this.onSwitchThemeClick}*/}
-                    {/*    title={*/}
-                    {/*        this.state.isDarkTheme*/}
-                    {/*            ? _t("user_menu|switch_theme_light")*/}
-                    {/*            : _t("user_menu|switch_theme_dark")*/}
-                    {/*    }*/}
-                    {/*>*/}
-                    {/*    <img src={DarkLightModeSvg} role="presentation" alt="" width={16} />*/}
-                    {/*</RovingAccessibleButton>*/}
+                    <RovingAccessibleButton
+                        className="mx_UserMenu_contextMenu_themeButton"
+                        onClick={this.onSwitchThemeClick}
+                        title={
+                            this.state.isDarkTheme
+                                ? _t("user_menu|switch_theme_light")
+                                : _t("user_menu|switch_theme_dark")
+                        }
+                    >
+                        <img src={DarkLightModeSvg} role="presentation" alt="" width={16} />
+                    </RovingAccessibleButton>
                 </div>
                 {topSection}
                 {primaryOptionList}

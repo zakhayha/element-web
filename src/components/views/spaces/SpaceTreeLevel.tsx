@@ -83,7 +83,7 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
     const spaceKey = _spaceKey ?? space?.roomId;
 
     let avatar = (
-        label === "Home" ? (
+        label === "Home" || label === "All Chats" ? (
             <div className="mx_SpaceButton_avatarPlaceholder">
                 <div className="mx_SpaceButton_icon" />
             </div>
@@ -165,7 +165,7 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
                     {notifBadge}
                 </div>
                 {!isNarrow && (
-                    label === "Home" ? (
+                    label === "Home" || label === "All Chats" ? (
                         <span className="mx_SpaceButton_name_custom">iluvatar</span>
                     ) : (
                         <span className="mx_SpaceButton_name">{label}</span>
