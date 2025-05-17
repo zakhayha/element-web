@@ -19,15 +19,15 @@ import React, {
     useRef,
     useState,
 } from "react";
-import { DragDropContext, Draggable, Droppable, type DroppableProvidedProps } from "react-beautiful-dnd";
+import {DragDropContext, Draggable, Droppable, type DroppableProvidedProps} from "react-beautiful-dnd";
 import classNames from "classnames";
-import { type Room } from "matrix-js-sdk/src/matrix";
+import {type Room} from "matrix-js-sdk/src/matrix";
 
-import { _t } from "../../../languageHandler";
-import { useContextMenu } from "../../structures/ContextMenu";
+import {_t} from "../../../languageHandler";
+import {useContextMenu} from "../../structures/ContextMenu";
 import SpaceCreateMenu from "./SpaceCreateMenu";
-import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
-import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
+import {SpaceButton, SpaceItem} from "./SpaceTreeLevel";
+import {useEventEmitter, useEventEmitterState} from "../../../hooks/useEventEmitter";
 import SpaceStore from "../../../stores/spaces/SpaceStore";
 import {
     getMetaSpaceName,
@@ -38,7 +38,7 @@ import {
     UPDATE_SELECTED_SPACE,
     UPDATE_TOP_LEVEL_SPACES,
 } from "../../../stores/spaces";
-import { RovingTabIndexProvider } from "../../../accessibility/RovingTabIndex";
+import {RovingAccessibleButton, RovingTabIndexProvider} from "../../../accessibility/RovingTabIndex";
 import {
     RoomNotificationStateStore,
     UPDATE_STATUS_INDICATOR,
@@ -49,25 +49,27 @@ import IconizedContextMenu, {
     IconizedContextMenuOptionList,
 } from "../context_menus/IconizedContextMenu";
 import SettingsStore from "../../../settings/SettingsStore";
-import { SettingLevel } from "../../../settings/SettingLevel";
+import {SettingLevel} from "../../../settings/SettingLevel";
 import UIStore from "../../../stores/UIStore";
 // import QuickSettingsButton from "./QuickSettingsButton";
-import { useSettingValue } from "../../../hooks/useSettings";
+import {useSettingValue} from "../../../hooks/useSettings";
 import UserMenu from "../../structures/UserMenu";
 import IndicatorScrollbar from "../../structures/IndicatorScrollbar";
-import { useDispatcher } from "../../../hooks/useDispatcher";
+import {useDispatcher} from "../../../hooks/useDispatcher";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
-import { type ActionPayload } from "../../../dispatcher/payloads";
-import { Action } from "../../../dispatcher/actions";
-import { type NotificationState } from "../../../stores/notifications/NotificationState";
-import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
-import { getKeyBindingsManager } from "../../../KeyBindingsManager";
-import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
-import { UIComponent } from "../../../settings/UIFeature";
+import {findHighContrastTheme} from "../../../theme";
+import {type ActionPayload} from "../../../dispatcher/payloads";
+import {Action} from "../../../dispatcher/actions";
+import {type NotificationState} from "../../../stores/notifications/NotificationState";
+import {KeyBindingAction} from "../../../accessibility/KeyboardShortcuts";
+import {getKeyBindingsManager} from "../../../KeyBindingsManager";
+import {shouldShowComponent} from "../../../customisations/helpers/UIComponents";
+import {UIComponent} from "../../../settings/UIFeature";
 // import { ThreadsActivityCentre } from "./threads-activity-centre/";
 import AccessibleButton from "../elements/AccessibleButton";
-import { Landmark, LandmarkNavigation } from "../../../accessibility/LandmarkNavigation";
-import { KeyboardShortcut } from "../settings/KeyboardShortcut";
+import {Landmark, LandmarkNavigation} from "../../../accessibility/LandmarkNavigation";
+import {KeyboardShortcut} from "../settings/KeyboardShortcut";
+import DarkLightModeSvg from "../../../../res/img/element-icons/roomlist/dark-light-mode.svg";
 
 const useSpaces = (): [Room[], MetaSpace[], Room[], SpaceKey] => {
     const invites = useEventEmitterState<Room[]>(SpaceStore.instance, UPDATE_INVITED_SPACES, () => {
@@ -85,10 +87,10 @@ const useSpaces = (): [Room[], MetaSpace[], Room[], SpaceKey] => {
 };
 
 export const HomeButtonContextMenu: React.FC<ComponentProps<typeof SpaceContextMenu>> = ({
-    onFinished,
-    hideHeader,
-    ...props
-}) => {
+                                                                                             onFinished,
+                                                                                             hideHeader,
+                                                                                             ...props
+                                                                                         }) => {
     const allRoomsInHome = useSettingValue("Spaces.allRoomsInHome");
 
     return (
@@ -116,7 +118,7 @@ interface IMetaSpaceButtonProps extends ComponentProps<typeof SpaceButton> {
 
 type MetaSpaceButtonProps = Pick<IMetaSpaceButtonProps, "selected" | "isPanelCollapsed">;
 
-const MetaSpaceButton: React.FC<IMetaSpaceButtonProps> = ({ selected, isPanelCollapsed, size = "32px", ...props }) => {
+const MetaSpaceButton: React.FC<IMetaSpaceButtonProps> = ({selected, isPanelCollapsed, size = "32px", ...props}) => {
     return (
         <li
             className={classNames("mx_SpaceItem", {
@@ -136,7 +138,7 @@ const getHomeNotificationState = (): NotificationState => {
         : SpaceStore.instance.getNotificationState(MetaSpace.Home);
 };
 
-const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed }) => {
+const HomeButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}) => {
     const allRoomsInHome = useEventEmitterState(SpaceStore.instance, UPDATE_HOME_BEHAVIOUR, () => {
         return SpaceStore.instance.allRoomsInHome;
     });
@@ -162,7 +164,7 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
     );
 };
 
-const FavouritesButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed }) => {
+const FavouritesButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}) => {
     return (
         <MetaSpaceButton
             spaceKey={MetaSpace.Favourites}
@@ -176,7 +178,7 @@ const FavouritesButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCol
     );
 };
 
-const PeopleButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed }) => {
+const PeopleButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}) => {
     return (
         <MetaSpaceButton
             spaceKey={MetaSpace.People}
@@ -190,7 +192,7 @@ const PeopleButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollaps
     );
 };
 
-const OrphansButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed }) => {
+const OrphansButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}) => {
     return (
         <MetaSpaceButton
             spaceKey={MetaSpace.Orphans}
@@ -204,7 +206,7 @@ const OrphansButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollap
     );
 };
 
-const VideoRoomsButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed }) => {
+const VideoRoomsButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}) => {
     return (
         <MetaSpaceButton
             spaceKey={MetaSpace.VideoRooms}
@@ -219,9 +221,9 @@ const VideoRoomsButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCol
 };
 
 const CreateSpaceButton: React.FC<Pick<IInnerSpacePanelProps, "isPanelCollapsed" | "setPanelCollapsed">> = ({
-    isPanelCollapsed,
-    setPanelCollapsed,
-}) => {
+                                                                                                                isPanelCollapsed,
+                                                                                                                setPanelCollapsed,
+                                                                                                            }) => {
     const [menuDisplayed, handle, openMenu, closeMenu] = useContextMenu<HTMLDivElement>();
 
     useEffect(() => {
@@ -238,9 +240,9 @@ const CreateSpaceButton: React.FC<Pick<IInnerSpacePanelProps, "isPanelCollapsed"
     const onNewClick = menuDisplayed
         ? closeMenu
         : () => {
-              if (!isPanelCollapsed) setPanelCollapsed(true);
-              openMenu();
-          };
+            if (!isPanelCollapsed) setPanelCollapsed(true);
+            openMenu();
+        };
 
     return (
         <li
@@ -285,7 +287,7 @@ interface IInnerSpacePanelProps extends DroppableProvidedProps {
 
 // Optimisation based on https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/api/droppable.md#recommended-droppable--performance-optimisation
 const InnerSpacePanel = React.memo<IInnerSpacePanelProps>(
-    ({ children, isPanelCollapsed, setPanelCollapsed, isDraggingOver, innerRef, ...props }) => {
+    ({children, isPanelCollapsed, setPanelCollapsed, isDraggingOver, innerRef, ...props}) => {
         const [invites, metaSpaces, actualSpaces, activeSpace] = useSpaces();
         const activeSpaces = activeSpace ? [activeSpace] : [];
 
@@ -304,8 +306,8 @@ const InnerSpacePanel = React.memo<IInnerSpacePanelProps>(
                 style={
                     isDraggingOver
                         ? {
-                              pointerEvents: "none",
-                          }
+                            pointerEvents: "none",
+                        }
                         : undefined
                 }
                 element="ul"
@@ -362,10 +364,34 @@ const SpacePanel: React.FC = () => {
             setPanelCollapsed(!isPanelCollapsed);
         }
     });
+    // --- Add these lines ---
+    // @ts-ignore
+    const currentTheme = useSettingValue<string>("theme") || '';
+    // @ts-ignore
+    const isDarkTheme = currentTheme.includes("dark");
+    // @ts-ignore
+    const isHighContrast = currentTheme.includes("high-contrast");
 
+    // Replicate the theme switching logic from UserMenu
+    // Corrected useCallback syntax - Removed redundant type annotation
+    const onSwitchThemeClick = useCallback((): void => {
+        // Disable system theme matching if the user hits this button
+        SettingsStore.setValue("use_system_theme", null, SettingLevel.DEVICE, false);
+
+        let newTheme = isDarkTheme ? "light" : "dark";
+        if (isHighContrast) {
+            const hcTheme = findHighContrastTheme(newTheme);
+            if (hcTheme) {
+                newTheme = hcTheme;
+            }
+        }
+        // set at same level as Appearance tab
+        SettingsStore.setValue("theme", null, SettingLevel.DEVICE, newTheme);
+    }, [isDarkTheme, isHighContrast]); // Depend on theme state
+    // --- End added lines ---
     return (
         <RovingTabIndexProvider handleHomeEnd handleUpDown={!dragging}>
-            {({ onKeyDownHandler, onDragEndHandler }) => (
+            {({onKeyDownHandler, onDragEndHandler}) => (
                 <DragDropContext
                     onDragStart={() => {
                         setDragging(true);
@@ -378,7 +404,7 @@ const SpacePanel: React.FC = () => {
                     }}
                 >
                     <nav
-                        className={classNames("mx_SpacePanel", { collapsed: isPanelCollapsed })}
+                        className={classNames("mx_SpacePanel", {collapsed: isPanelCollapsed})}
                         onKeyDown={(ev) => {
                             const navAction = getKeyBindingsManager().getNavigationAction(ev);
                             if (
@@ -416,14 +442,36 @@ const SpacePanel: React.FC = () => {
                         {/*<ThreadsActivityCentre displayButtonLabel={!isPanelCollapsed} />*/}
 
                         {/*<QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />*/}
+                        <div
+                            className={`parent-container ${
+                                isDarkTheme ? "dark-mode" : "light-mode"
+                            }`}
+                        >
+                            <div className={`custom_child_component ${
+                                isDarkTheme ? "dark-mode" : "light-mode"
+                            }`}>
+                                <RovingAccessibleButton
+                                    className="mx_UserMenu_contextMenu_themeButton"
+                                    onClick={onSwitchThemeClick} // Use the new useCallback function
+                                    title={
+                                        // Use the state derived from hooks
+                                        isDarkTheme
+                                            ? _t("user_menu|switch_theme_light")
+                                            : _t("user_menu|switch_theme_dark")
+                                    }
+                                >
+                                    <img src={DarkLightModeSvg} role="presentation" alt="" width={16} />
+                                </RovingAccessibleButton>
+                            </div>
+                        </div>
                         <UserMenu isPanelCollapsed={isPanelCollapsed}>
                             <AccessibleButton
-                                className={classNames("mx_SpacePanel_toggleCollapse", { expanded: !isPanelCollapsed })}
+                                className={classNames("mx_SpacePanel_toggleCollapse", {expanded: !isPanelCollapsed})}
                                 onClick={() => setPanelCollapsed(!isPanelCollapsed)}
                                 title={isPanelCollapsed ? _t("action|expand") : _t("action|collapse")}
                                 caption={
                                     <KeyboardShortcut
-                                        value={{ ctrlOrCmdKey: true, shiftKey: true, key: "d" }}
+                                        value={{ctrlOrCmdKey: true, shiftKey: true, key: "d"}}
                                         className="mx_SpacePanel_Tooltip_KeyboardShortcut"
                                     />
                                 }

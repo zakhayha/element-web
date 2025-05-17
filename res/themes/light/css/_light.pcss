@@ -383,3 +383,42 @@ body {
 }
 
 /* ******************** */
+.parent-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px; /* Adjust padding as needed */
+    transition: background-color 0.3s ease; /* Smooth transition on toggle */
+}
+.custom_child_component{
+    width: 32px;
+    height: 32px;
+    background: white;
+    display: flex;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+}
+.custom_child_component{
+    width: 32px;
+    height: 32px;
+    display: flex;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+}
+.custom_child_component .mx_AccessibleButton {
+    display: flex;
+}
+
+
+.custom_child_component.light-mode {
+    background-color: #d8d9da; /* Light theme background */
+    color: #000; /* Light theme text color, if needed */
+}
+
+.mx_UserMenu_contextMenu_themeButton {
+    border: none;
+    background: transparent; /* No default background for the button */
+    cursor: pointer;
+}

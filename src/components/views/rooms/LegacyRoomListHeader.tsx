@@ -38,7 +38,7 @@ import {
 } from "../../../utils/space";
 import {
     ChevronFace,
-    ContextMenuTooltipButton,
+    // ContextMenuTooltipButton,
     type MenuProps,
     useContextMenu,
 } from "../../structures/ContextMenu";
@@ -109,7 +109,8 @@ interface IProps {
 
 const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
     const cli = useContext(MatrixClientContext);
-    const [mainMenuDisplayed, mainMenuHandle, openMainMenu, closeMainMenu] = useContextMenu<HTMLDivElement>();
+    // const [mainMenuDisplayed, mainMenuHandle, openMainMenu, closeMainMenu] = useContextMenu<HTMLDivElement>();
+    const [mainMenuDisplayed, mainMenuHandle,closeMainMenu] = useContextMenu<HTMLDivElement>();
     const [plusMenuDisplayed, plusMenuHandle, closePlusMenu] = useContextMenu<HTMLDivElement>();
     const [spaceKey, activeSpace] = useEventEmitterState<[SpaceKey, Room | null]>(
         SpaceStore.instance,
@@ -379,13 +380,13 @@ const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
 
     let contextMenuButton: JSX.Element = <div className="mx_LegacyRoomListHeader_contextLessTitle">{title}</div>;
     if (canShowMainMenu) {
-        const commonProps = {
-            ref: mainMenuHandle,
-            onClick: openMainMenu,
-            isExpanded: mainMenuDisplayed,
-            className: "mx_LegacyRoomListHeader_contextMenuButton",
-            children: title,
-        };
+        // const commonProps = {
+        //     ref: mainMenuHandle,
+        //     onClick: openMainMenu,
+        //     isExpanded: mainMenuDisplayed,
+        //     className: "mx_LegacyRoomListHeader_contextMenuButton",
+        //     children: title,
+        // };
 
         if (!!activeSpace) {
             contextMenuButton = (
@@ -400,7 +401,18 @@ const LegacyRoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
             </div>
             );
         } else {
-            contextMenuButton = <ContextMenuTooltipButton {...commonProps} title={_t("room_list|home_menu_label")} />;
+            // Get the translated string first
+            const translatedString = _t("room_list|home_menu_label");
+
+            // Then extract just the "Home" part - assuming it's the first word
+            const homeText = translatedString.split(' ')[0];
+
+            // contextMenuButton = <ContextMenuTooltipButton {...commonProps} title={_t("room_list|home_menu_label")} />;
+            contextMenuButton = (
+                <div className="mx_LegacyRoomListHeader_contextMenuButton_custom">
+                    {homeText}
+                </div>
+            );
         }
     }
 

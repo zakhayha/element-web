@@ -414,11 +414,11 @@ interface ISpaceSetupPublicShareProps extends Pick<IProps & IState, "justCreated
 }
 
 const SpaceSetupPublicShare: React.FC<ISpaceSetupPublicShareProps> = ({
-    justCreatedOpts,
-    space,
-    onFinished,
-    firstRoomId,
-}) => {
+                                                                          justCreatedOpts,
+                                                                          space,
+                                                                          onFinished,
+                                                                          firstRoomId,
+                                                                      }) => {
     return (
         <div className="mx_SpaceRoomView_publicShare">
             <h1>

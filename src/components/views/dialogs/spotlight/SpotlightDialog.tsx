@@ -874,8 +874,8 @@ const SpotlightDialog: React.FC<IProps> = ({ initialText = "", initialFilter = n
                                         url={
                                             room.avatar_url
                                                 ? mediaFromMxc(room.avatar_url).getSquareThumbnailHttp(
-                                                      parseInt(AVATAR_SIZE, 10),
-                                                  )
+                                                    parseInt(AVATAR_SIZE, 10),
+                                                )
                                                 : null
                                         }
                                         size={AVATAR_SIZE}

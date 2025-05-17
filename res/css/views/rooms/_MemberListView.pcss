@@ -21,3 +21,56 @@ Please see LICENSE files in the repository root for full details.
         border-top: 2px solid var(--cpd-color-bg-subtle-primary);
     }
 }
+
+/* AI Providers Section */
+.mx_MemberListView_ai_section {
+    padding: 16px;
+    border-bottom: 1px solid var(--cpd-color-border-subtle-primary);
+}
+
+.mx_MemberListView_ai_heading {
+    margin-bottom: 12px;
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_MemberListView_ai_list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mx_MemberListView_ai_item {
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.mx_MemberListView_ai_item:hover {
+    background-color: var(--cpd-color-bg-subtle);
+}
+
+.mx_MemberListView_ai_avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--cpd-color-bg-subtle);
+    margin-right: 12px;
+    font-weight: bold;
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_MemberListView_ai_info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.mx_MemberListView_ai_description {
+    color: var(--cpd-color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

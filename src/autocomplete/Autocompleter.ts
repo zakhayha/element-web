@@ -18,6 +18,7 @@ import { timeout } from "../utils/promise";
 import { type ICommand } from "./AutocompleteProvider";
 import type AutocompleteProvider from "./AutocompleteProvider";
 import SpaceProvider from "./SpaceProvider";
+import AiProvider from "./AiProvider";
 import { TimelineRenderingType } from "../contexts/RoomContext";
 import { filterBoolean } from "../utils/arrays";
 
@@ -40,7 +41,7 @@ export interface ICompletion {
     href?: string;
 }
 
-const PROVIDERS = [UserProvider, RoomProvider, EmojiProvider, NotifProvider, CommandProvider, SpaceProvider];
+const PROVIDERS = [UserProvider, RoomProvider, EmojiProvider, NotifProvider, CommandProvider, SpaceProvider, AiProvider];
 
 // Providers will get rejected if they take longer than this.
 const PROVIDER_COMPLETION_TIMEOUT = 3000;
