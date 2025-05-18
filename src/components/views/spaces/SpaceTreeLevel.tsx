@@ -62,20 +62,20 @@ type ButtonProps<T extends keyof HTMLElementTagNameMap> = Omit<
 };
 
 export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
-    space,
-    spaceKey: _spaceKey,
-    className,
-    selected,
-    label,
-    contextMenuTooltip,
-    notificationState,
-    size,
-    isNarrow,
-    children,
-    innerRef,
-    ContextMenuComponent,
-    ...props
-}: ButtonProps<T>): JSX.Element => {
+                                                                       space,
+                                                                       spaceKey: _spaceKey,
+                                                                       className,
+                                                                       selected,
+                                                                       label,
+                                                                       contextMenuTooltip,
+                                                                       notificationState,
+                                                                       size,
+                                                                       isNarrow,
+                                                                       children,
+                                                                       innerRef,
+                                                                       ContextMenuComponent,
+                                                                       ...props
+                                                                   }: ButtonProps<T>): JSX.Element => {
     const [menuDisplayed, handle, openMenu, closeMenu] = useContextMenu<HTMLDivElement>(innerRef);
     const [onFocus, isActive, ref] = useRovingTabIndex<HTMLDivElement>(handle);
     const tabIndex = isActive ? 0 : -1;

@@ -128,118 +128,34 @@ Please see LICENSE files in the repository root for full details.
     .mx_SpaceRoomView_landing {
         display: flex;
         flex-direction: column;
-        min-width: 0;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .mx_SpaceRoomView_landing_header {
-            display: flex;
-            justify-content: space-between;
+    .mx_SpaceRoomView_blank {
+        display: none;
+    }
 
-            .mx_BaseAvatar {
-                width: 80px;
-            }
-        }
+    .mx_SpaceRoomView_messageComposer {
+        width: 720px;
+        max-width: 90%;
+    }
 
-        .mx_SpaceRoomView_landing_name {
-            margin: 24px 0 16px;
-            font-size: $font-15px;
-            color: $secondary-content;
+    .mx_SpaceRoomView_messageComposer .mx_MessageComposer_wrapper {
+        border: 1px solid $input-border-color;
+        border-radius: 8px;
+        background-color: $background;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        padding: 6px 12px;
+        margin: 8px 0;
+    }
 
-            > span {
-                display: flex;
-                flex-flow: column;
-                gap: 12px 0;
-
-                h1 {
-                    display: inline-block;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    width: 100%;
-                }
-            }
-
-            .mx_SpaceRoomView_landing_inviter {
-                .mx_BaseAvatar {
-                    margin-right: 4px;
-                    vertical-align: middle;
-                }
-            }
-        }
-
-        .mx_SpaceRoomView_landing_infoBar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-            line-height: $font-24px;
-
-            .mx_SpaceRoomView_landing_infoBar_interactive {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                gap: 12px 12px;
-
-                .mx_FacePile {
-                    display: inline-block;
-                    cursor: pointer;
-                }
-
-                .mx_SpaceRoomView_landing_inviteButton,
-                .mx_SpaceRoomView_landing_settingsButton {
-                    position: relative;
-
-                    &::before {
-                        position: absolute;
-                        content: "";
-                        mask-position: center;
-                        mask-repeat: no-repeat;
-                    }
-                }
-
-                .mx_SpaceRoomView_landing_inviteButton {
-                    padding: 4px 18px 4px 40px;
-                    height: min-content;
-
-                    &::before {
-                        left: 8px;
-                        height: 16px;
-                        width: 16px;
-                        background: var(--cpd-color-icon-on-solid-primary);
-                        mask-size: 16px;
-                        mask-image: url("$(res)/img/element-icons/room/invite.svg");
-                    }
-                }
-
-                .mx_SpaceRoomView_landing_settingsButton {
-                    width: 24px;
-                    height: 24px;
-
-                    &::before {
-                        left: 0;
-                        top: 0;
-                        height: 24px;
-                        width: 24px;
-                        background: $tertiary-content;
-                        mask-size: contain;
-                        mask-image: url("@vector-im/compound-design-tokens/icons/settings-solid.svg");
-                    }
-                }
-            }
-        }
-
-        .mx_SpaceRoomView_landing_topic {
-            font-size: $font-15px;
-            margin-top: 12px;
-            margin-bottom: 16px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .mx_SearchBox {
-            margin: 0 0 20px;
-            flex: 0;
-        }
+    .mx_SpaceRoomView_messageComposer .mx_BasicMessageComposer_input {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
     }
 
     .mx_SpaceRoomView_privateScope {

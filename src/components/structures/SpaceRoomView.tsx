@@ -9,7 +9,7 @@ Please see LICENSE files in the repository root for full details.
 import { EventType, RoomType, JoinRule, Preset, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import { KnownMembership } from "matrix-js-sdk/src/types";
 import { logger } from "matrix-js-sdk/src/logger";
-import React, { type JSX, useCallback, useContext, useRef, useState } from "react";
+import React, { type JSX, useCallback, useContext, useRef, useState, useMemo, useEffect } from "react";
 
 import MatrixClientContext from "../../contexts/MatrixClientContext";
 import createRoom, { type IOpts } from "../../createRoom";
@@ -30,7 +30,7 @@ import { UIComponent } from "../../settings/UIFeature";
 import { UPDATE_EVENT } from "../../stores/AsyncStore";
 import RightPanelStore from "../../stores/right-panel/RightPanelStore";
 import { RightPanelPhases } from "../../stores/right-panel/RightPanelStorePhases";
-import type ResizeNotifier from "../../utils/ResizeNotifier";
+import ResizeNotifier from "../../utils/ResizeNotifier";
 import {
     shouldShowSpaceInvite,
     shouldShowSpaceSettings,
@@ -66,6 +66,10 @@ import MainSplit from "./MainSplit";
 import RightPanel from "./RightPanel";
 import SpaceHierarchy, { showRoom } from "./SpaceHierarchy";
 import { type RoomPermalinkCreator } from "../../utils/permalinks/Permalinks";
+import MessageComposer from "../views/rooms/MessageComposer";
+import RoomContext, { TimelineRenderingType, MainSplitContentType } from "../../contexts/RoomContext";
+import { Layout } from "../../settings/enums/Layout";
+import Spinner from "../views/elements/Spinner";
 
 interface IProps {
     space: Room;
@@ -200,89 +204,479 @@ const SpaceLandingAddButton: React.FC<{ space: Room }> = ({ space }) => {
     );
 };
 
-const SpaceLanding: React.FC<{ space: Room }> = ({ space }) => {
+// Custom MessageComposer for spaces that creates a private room when a message is submitted
+const SpaceMessageComposer: React.FC<{room: Room, resizeNotifier: ResizeNotifier}> = ({room, resizeNotifier}) => {
     const cli = useContext(MatrixClientContext);
-    const myMembership = useMyRoomMembership(space);
-    const userId = cli.getSafeUserId();
+    const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
-    const storeIsShowingSpaceMembers = useCallback(
-        () =>
-            RightPanelStore.instance.isOpenForRoom(space.roomId) &&
-            RightPanelStore.instance.currentCardForRoom(space.roomId)?.phase === RightPanelPhases.MemberList,
-        [space.roomId],
-    );
-    const isShowingMembers = useEventEmitterState(RightPanelStore.instance, UPDATE_EVENT, storeIsShowingSpaceMembers);
+    // Create a context value that allows sending messages
+    const contextValue = useMemo(() => ({
+        roomLoading: false,
+        peekLoading: false,
+        shouldPeek: false,
+        membersLoaded: true,
+        numUnreadMessages: 0,
+        canPeek: false,
+        showApps: false,
+        isPeeking: false,
+        showRightPanel: false,
+        joining: false,
+        showTopUnreadMessagesBar: false,
+        statusBarVisible: false,
+        canReact: true,
+        canSelfRedact: true,
+        canSendMessages: true, // This is the key property we're overriding
+        resizing: false,
+        layout: Layout.Group,
+        lowBandwidth: false,
+        alwaysShowTimestamps: false,
+        showTwelveHourTimestamps: false,
+        userTimezone: undefined,
+        readMarkerInViewThresholdMs: 3000,
+        readMarkerOutOfViewThresholdMs: 30000,
+        showHiddenEvents: false,
+        showReadReceipts: true,
+        showRedactions: true,
+        showJoinLeaves: true,
+        showAvatarChanges: true,
+        showDisplaynameChanges: true,
+        matrixClientIsReady: true,
+        showUrlPreview: false,
+        timelineRenderingType: TimelineRenderingType.Room,
+        mainSplitContentType: MainSplitContentType.Timeline,
+        liveTimeline: undefined,
+        narrow: false,
+        msc3946ProcessDynamicPredecessor: false,
+        canAskToJoin: false,
+        promptAskToJoin: false,
+        viewRoomOpts: { buttons: [] },
+        isRoomEncrypted: null,
+        tombstone: undefined
+    }), []);
 
-    let inviteButton;
-    if (shouldShowSpaceInvite(space) && shouldShowComponent(UIComponent.InviteUsers)) {
-        inviteButton = (
-            <AccessibleButton
-                kind="primary"
-                className="mx_SpaceRoomView_landing_inviteButton"
-                onClick={() => {
-                    showSpaceInvite(space);
-                }}
-            >
-                {_t("action|invite")}
-            </AccessibleButton>
-        );
-    }
-
-    const hasAddRoomPermissions =
-        myMembership === KnownMembership.Join && space.currentState.maySendStateEvent(EventType.SpaceChild, userId);
-
-    let addRoomButton;
-    if (hasAddRoomPermissions) {
-        addRoomButton = <SpaceLandingAddButton space={space} />;
-    }
-
-    let settingsButton;
-    if (shouldShowSpaceSettings(space)) {
-        settingsButton = (
-            <AccessibleButton
-                className="mx_SpaceRoomView_landing_settingsButton"
-                onClick={() => {
-                    showSpaceSettings(space);
-                }}
-                title={_t("common|settings")}
-                placement="bottom"
-            />
-        );
-    }
-
-    const onMembersClick = (): void => {
-        RightPanelStore.instance.setCard({ phase: RightPanelPhases.MemberList });
+    // Helper to get the message text from the composer
+    const getMessageText = (): string => {
+        // Find the message input
+        const composerInput = document.querySelector('.mx_SendMessageComposer .mx_BasicMessageComposer_input');
+        if (composerInput) {
+            // Get text content from the input
+            return composerInput.textContent || '';
+        }
+        return '';
     };
+
+    // Function to inject the loading overlay into the send button
+    const applySendButtonLoadingState = useCallback((loading: boolean) => {
+        // Find the button element
+        const button = document.querySelector('.mx_MessageComposer_sendMessage');
+        if (!button) return;
+
+        // Clear any existing loading state
+        button.classList.remove('mx_SpaceRoomView_sendButton_loading');
+        const existingOverlay = document.querySelector('.mx_SpaceRoomView_sendButton_loadingOverlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        // If loading, add the loading state
+        if (loading) {
+            button.classList.add('mx_SpaceRoomView_sendButton_loading');
+
+            // Create loading overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'mx_SpaceRoomView_sendButton_loadingOverlay';
+
+            // Create spinner element
+            const spinner = document.createElement('div');
+            spinner.className = 'mx_SpaceRoomView_sendButton_spinner';
+            overlay.appendChild(spinner);
+
+            // Add the overlay to the button
+            button.appendChild(overlay);
+        }
+    }, []);
+
+    // Create a private room when the send button is clicked
+    const createPrivateRoom = useCallback(async (): Promise<void> => {
+        // Don't do anything if already creating a room
+        if (isCreatingRoom) return;
+
+        try {
+            // Get message text before starting creation
+            const messageText = getMessageText();
+            const words = messageText.trim().split(/\s+/);
+            const firstWord = words[0] || '';
+
+            // Apply loading state immediately using DOM manipulation for instant feedback
+            applySendButtonLoadingState(true);
+
+            // Then update React state (this might be delayed)
+            setIsCreatingRoom(true);
+            console.log("Creating private room in space with name from message:", firstWord);
+
+            // Use first word as room name, fallback to timestamp if empty
+            let roomName;
+            if (firstWord) {
+                roomName = firstWord;
+            } else {
+                // Create a timestamp for the room name as fallback
+                const timestamp = new Date().toLocaleTimeString();
+                roomName = `Private Room (${timestamp})`;
+            }
+
+            // Create a new private room in the space
+            const roomId = await createRoom(cli, {
+                createOpts: {
+                    preset: Preset.PrivateChat,
+                    name: roomName,
+                    initial_state: [
+                        {
+                            type: EventType.RoomEncryption,
+                            state_key: "",
+                            content: {
+                                algorithm: "m.megolm.v1.aes-sha2",
+                            },
+                        },
+                    ],
+                },
+                spinner: false, // We have our own loading indicator
+                encryption: true,
+                andView: false,
+                inlineErrors: true,
+                parentSpace: room, // Add to the current space
+                joinRule: JoinRule.Restricted,
+            });
+
+            // Navigate to the new room if we have a valid roomId
+            if (roomId && typeof roomId === 'string') {
+                // If there's a message, send it to the new room
+                if (messageText.trim()) {
+                    await cli.sendTextMessage(roomId, messageText);
+                }
+
+                // Clear the composer after sending
+                const composerInput = document.querySelector('.mx_SendMessageComposer .mx_BasicMessageComposer_input');
+                if (composerInput) {
+                    composerInput.textContent = '';
+                }
+
+                // Navigate to the new room
+                defaultDispatcher.dispatch<ViewRoomPayload>({
+                    action: Action.ViewRoom,
+                    room_id: roomId,
+                    metricsTrigger: undefined,
+                });
+            } else {
+                console.error("Failed to create room: Invalid room ID returned");
+                logger.error("Failed to create room: Invalid room ID returned");
+            }
+
+        } catch (error) {
+            console.error("Failed to create private room:", error);
+            logger.error("Failed to create private room:", error);
+        } finally {
+            // Remove the loading state
+            applySendButtonLoadingState(false);
+            setIsCreatingRoom(false);
+        }
+    }, [cli, room, isCreatingRoom, applySendButtonLoadingState]);
+
+    // Initialize the UI and apply CSS modifications
+    useEffect(() => {
+        // Create and apply CSS styles
+        const style = document.createElement('style');
+        style.innerHTML = `
+            /* Loading button style */
+            .mx_SpaceRoomView_sendButton_loading {
+                opacity: 0.7 !important;
+                cursor: wait !important;
+                position: relative;
+            }
+
+            .mx_SpaceRoomView_sendButton_loadingOverlay {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background-color: rgba(0, 0, 0, 0.1) !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 9999 !important;
+            }
+
+            .mx_SpaceRoomView_sendButton_spinner {
+                width: 16px !important;
+                height: 16px !important;
+                border: 2px solid rgba(0, 0, 0, 0.1) !important;
+                border-top-color: #00CC6A !important;
+                border-radius: 50% !important;
+                animation: spinner 1s linear infinite !important;
+            }
+
+            @keyframes spinner {
+                to {transform: rotate(360deg);}
+            }
+
+            /* Force show send button even when input is empty */
+            .mx_MessageComposer_sendMessage {
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+            }
+
+            /* COMPLETELY remove all placeholders */
+            .mx_BasicMessageComposer_inputEmpty span,
+            .mx_SendMessageComposer span[data-text="Send a message..."],
+            .mx_BasicMessageComposer span[data-text="Send a message..."],
+            .mx_BasicMessageComposer_inputWrapper span:not(.mx_BasicMessageComposer_input),
+            [data-placeholder="Send a message..."] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                height: 0 !important;
+                width: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+            }
+
+            /* Add our custom placeholder via ::before */
+            .mx_BasicMessageComposer_inputEmpty::before {
+                content: '' !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                opacity: 0.5 !important;
+                pointer-events: none !important;
+                padding: 11px 14px !important;
+                display: block !important;
+                z-index: 1 !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Function to update the UI components
+        const updateUI = () => {
+            // 1. Make send button visible
+            const sendButton = document.querySelector('.mx_MessageComposer_sendMessage');
+            if (sendButton) {
+                sendButton.setAttribute('style', 'opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;');
+            }
+
+            // 2. Find and remove ALL original placeholder elements - extremely aggressive approach
+            const possiblePlaceholders = [
+                '.mx_BasicMessageComposer_inputEmpty > span',
+                '.mx_SendMessageComposer span[data-text="Send a message..."]',
+                '.mx_BasicMessageComposer span[data-text="Send a message..."]',
+                '.mx_BasicMessageComposer_inputWrapper > span',
+                '[data-placeholder="Send a message..."]',
+                '.mx_BasicMessageComposer_inputEmpty > *:not(.mx_BasicMessageComposer_input)',
+                '[placeholder]',
+                '[aria-placeholder]',
+                '[data-placeholder]'
+            ];
+
+            possiblePlaceholders.forEach(selector => {
+                document.querySelectorAll(selector).forEach(el => {
+                    // Check if it's a placeholder element
+                    if (el.classList.contains('mx_BasicMessageComposer_input')) {
+                        return; // Skip the actual input
+                    }
+
+                    // Check if the element contains placeholder text
+                    const text = el.textContent || el.getAttribute('data-text') ||
+                                 el.getAttribute('placeholder') || el.getAttribute('data-placeholder');
+
+                    if (text && (
+                        text.includes('Send a message') ||
+                        text.includes('start messaging') ||
+                        text.includes('Start messaging')
+                    )) {
+                        // Remove the element completely if possible
+                        if (el.parentNode) {
+                            el.parentNode.removeChild(el);
+                        } else {
+                            // If can't remove, hide it as aggressively as possible
+                            el.setAttribute('style', `
+                                display: none !important;
+                                visibility: hidden !important;
+                                opacity: 0 !important;
+                                height: 0 !important;
+                                width: 0 !important;
+                                overflow: hidden !important;
+                                position: absolute !important;
+                                pointer-events: none !important;
+                            `);
+                        }
+                    }
+                });
+            });
+
+            // 3. Override any data-placeholder attributes
+            document.querySelectorAll('[data-placeholder]').forEach(el => {
+                if (el.getAttribute('data-placeholder')?.includes('Send a message')) {
+                    el.setAttribute('data-placeholder', '');
+                }
+            });
+
+            // 4. Set proper attributes on the input field
+            const inputField = document.querySelector('.mx_BasicMessageComposer_inputField, .mx_BasicMessageComposer_input');
+            if (inputField) {
+                inputField.setAttribute('data-placeholder', '');
+                inputField.setAttribute('aria-label', '');
+                inputField.setAttribute('placeholder', '');
+            }
+        };
+
+        // Set up a function to clear all text nodes that might contain "Send a message..."
+        const clearUnwantedTextNodes = () => {
+            // Find the composer wrapper
+            const wrapper = document.querySelector('.mx_BasicMessageComposer_inputWrapper');
+            if (!wrapper) return;
+
+            // Use a simpler approach - find all text nodes recursively
+            const textNodesToRemove: Node[] = [];
+
+            function findTextNodes(node: Node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const text = node.nodeValue || '';
+                    if (text.includes('Send a message') || text.includes('send a message')) {
+                        textNodesToRemove.push(node);
+                    }
+                } else {
+                    // Recursively process child nodes
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        findTextNodes(node.childNodes[i]);
+                    }
+                }
+            }
+
+            // Start the recursive search
+            findTextNodes(wrapper);
+
+            // Remove all found text nodes
+            textNodesToRemove.forEach(node => {
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
+            });
+        };
+
+        // Run all update functions
+        const runAllUpdates = () => {
+            updateUI();
+            clearUnwantedTextNodes();
+        };
+
+        // Run once immediately
+        runAllUpdates();
+
+        // Run again after short delays to ensure it takes effect after React updates
+        const timeouts = [
+            setTimeout(runAllUpdates, 50),
+            setTimeout(runAllUpdates, 100),
+            setTimeout(runAllUpdates, 300),
+            setTimeout(runAllUpdates, 500),
+            setTimeout(runAllUpdates, 1000),
+            setTimeout(runAllUpdates, 2000)
+        ];
+
+        // Set up interval to continuously ensure UI is correct
+        const interval = setInterval(runAllUpdates, 200);
+
+        // Set up mutation observer to detect DOM changes and update UI immediately
+        const observer = new MutationObserver(mutations => {
+            for (const mutation of mutations) {
+                // Check if any added nodes might be placeholders
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    const hasTextNode = Array.from(mutation.addedNodes).some(node =>
+                        node.nodeType === 3 || // Text node
+                        (node.nodeType === 1 &&
+                         (node as Element).tagName === 'SPAN' ||
+                         (node as Element).hasAttribute('data-placeholder'))
+                    );
+
+                    if (hasTextNode) {
+                        runAllUpdates();
+                        return;
+                    }
+                }
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeFilter: ['data-placeholder', 'placeholder']
+        });
+
+        // Cleanup function
+        return () => {
+            document.head.removeChild(style);
+            timeouts.forEach(clearTimeout);
+            clearInterval(interval);
+            observer.disconnect();
+        };
+    }, []);
+
+    // Set up click handler for the send button
+    useEffect(() => {
+        const handleClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            const button = target.closest('.mx_MessageComposer_sendMessage');
+            if (button) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Apply loading state immediately for instant feedback
+                applySendButtonLoadingState(true);
+
+                // Start the room creation process (in the next event loop tick)
+                setTimeout(() => createPrivateRoom(), 0);
+                return false;
+            }
+            return true;
+        };
+
+        // Add event listener
+        document.addEventListener('click', handleClick, true);
+
+        // Cleanup
+        return () => {
+            document.removeEventListener('click', handleClick, true);
+        };
+    }, [createPrivateRoom, applySendButtonLoadingState]);
+
+    return (
+        <RoomContext.Provider value={contextValue}>
+            <MessageComposer
+                room={room}
+                resizeNotifier={resizeNotifier}
+            />
+        </RoomContext.Provider>
+    );
+};
+
+const SpaceLanding: React.FC<{ space: Room }> = ({ space }) => {
+    // eslint-disable-next-line react-compiler/react-compiler
+    const resizeNotifier = useRef<ResizeNotifier>(new ResizeNotifier()).current;
 
     return (
         <div className="mx_SpaceRoomView_landing">
-            <div className="mx_SpaceRoomView_landing_header">
-                <RoomAvatar room={space} size="80px" viewAvatarOnClick={true} type="square" />
-            </div>
-            <div className="mx_SpaceRoomView_landing_name">
-                <RoomName room={space}>
-                    {(name) => {
-                        const tags = { name: () => <h1>{name}</h1> };
-                        return _t("space|landing_welcome", {}, tags) as JSX.Element;
-                    }}
-                </RoomName>
-            </div>
-            <div className="mx_SpaceRoomView_landing_infoBar">
-                <RoomInfoLine room={space} />
-                <div className="mx_SpaceRoomView_landing_infoBar_interactive">
-                    <RoomFacePile
+            {/* Blank panel as requested by user */}
+            <div className="mx_SpaceRoomView_blank" />
+            <div className="mx_SpaceRoomView_messageComposer">
+                <SpaceMessageComposer
                         room={space}
-                        onlyKnownUsers={false}
-                        numShown={7}
-                        onClick={isShowingMembers ? undefined : onMembersClick}
+                    resizeNotifier={resizeNotifier}
                     />
-                    {inviteButton}
-                    {settingsButton}
                 </div>
-            </div>
-            <RoomTopic room={space} className="mx_SpaceRoomView_landing_topic" />
-
-            <SpaceHierarchy space={space} showRoom={showRoom} additionalButtons={addRoomButton} />
         </div>
     );
 };
@@ -600,6 +994,9 @@ export default class SpaceRoomView extends React.PureComponent<IProps, IState> {
     declare public context: React.ContextType<typeof MatrixClientContext>;
 
     private dispatcherRef?: string;
+    // private mutationObserver: MutationObserver | null = null;
+    private onGlobalSpaceClick?: (event: MouseEvent) => void;
+    private dispatchOverride?: string;
 
     public constructor(props: IProps, context: React.ContextType<typeof MatrixClientContext>) {
         super(props, context);
@@ -621,18 +1018,81 @@ export default class SpaceRoomView extends React.PureComponent<IProps, IState> {
             showRightPanel: RightPanelStore.instance.isOpenForRoom(this.props.space.roomId),
             myMembership: this.props.space.getMyMembership(),
         };
+
+        // Create a global space click handler
+        this.setupGlobalSpaceClickHandler();
     }
 
     public componentDidMount(): void {
         this.dispatcherRef = defaultDispatcher.register(this.onAction);
         RightPanelStore.instance.on(UPDATE_EVENT, this.onRightPanelStoreUpdate);
         this.context.on(RoomEvent.MyMembership, this.onMyMembership);
+
+        // Ensure we're in Landing phase when mounting
+        this.setState({ phase: Phase.Landing });
     }
 
     public componentWillUnmount(): void {
         defaultDispatcher.unregister(this.dispatcherRef);
         RightPanelStore.instance.off(UPDATE_EVENT, this.onRightPanelStoreUpdate);
         this.context.off(RoomEvent.MyMembership, this.onMyMembership);
+
+        // Clean up our global handler
+        this.cleanupGlobalSpaceClickHandler();
+    }
+
+    // Set up a global event handler for space clicks
+    private setupGlobalSpaceClickHandler(): void {
+        // Create the event handler
+        this.onGlobalSpaceClick = (event: MouseEvent): void => {
+            const target = event.target as HTMLElement;
+
+            // Check if a space button was clicked
+            const spaceButton = target.closest('.mx_SpaceButton');
+            if (spaceButton) {
+                // Get the space ID from attributes
+                const spaceId = spaceButton.getAttribute('data-room-id') || '';
+
+                // Check if it's our space
+                if (spaceId === this.props.space.roomId) {
+                    console.log("Our space was clicked, ensuring Landing phase");
+
+                    // Use a delay to let the default handlers run first
+                    setTimeout(() => {
+                        this.setState({ phase: Phase.Landing });
+                    }, 100);
+                }
+            }
+        };
+
+        // Attach the handler
+        document.addEventListener('click', this.onGlobalSpaceClick, true);
+
+        // Create an additional override for the dispatcher
+        this.dispatchOverride = defaultDispatcher.register((payload: ActionPayload) => {
+            // Check for a ViewRoom action for our space
+            if (payload.action === Action.ViewRoom &&
+                payload.room_id === this.props.space.roomId) {
+
+                console.log("ViewRoom action for our space detected");
+
+                // Force to Landing phase
+                setTimeout(() => this.setState({ phase: Phase.Landing }), 50);
+            }
+        });
+    }
+
+    // Clean up our global handlers
+    private cleanupGlobalSpaceClickHandler(): void {
+        if (this.onGlobalSpaceClick) {
+            document.removeEventListener('click', this.onGlobalSpaceClick, true);
+            this.onGlobalSpaceClick = undefined;
+        }
+
+        if (this.dispatchOverride) {
+            defaultDispatcher.unregister(this.dispatchOverride);
+            this.dispatchOverride = undefined;
+        }
     }
 
     private onMyMembership = (room: Room, myMembership: string): void => {
@@ -648,9 +1108,24 @@ export default class SpaceRoomView extends React.PureComponent<IProps, IState> {
     };
 
     private onAction = (payload: ActionPayload): void => {
-        if (payload.action === Action.ViewRoom && payload.room_id === this.props.space.roomId) {
+        // If the payload is for viewing ANY room while we're looking at our space
+        if (payload.action === Action.ViewRoom) {
+            // Check if we're currently viewing our space room
+            const currentUrl = window.location.href;
+            const isViewingSpace = currentUrl.includes(this.props.space.roomId);
+
+            // If we're viewing our space
+            if (isViewingSpace) {
+                // Force to landing phase
+                console.log("Intercepted room selection while in space view, forcing Landing phase");
             this.setState({ phase: Phase.Landing });
-            return;
+
+                // If this is specifically our space being viewed, force landing
+                if (payload.room_id === this.props.space.roomId) {
+                    console.log("ViewRoom action for our space, resetting to landing phase");
+                    this.setState({ phase: Phase.Landing });
+                }
+            }
         }
     };
 
@@ -668,6 +1143,14 @@ export default class SpaceRoomView extends React.PureComponent<IProps, IState> {
     };
 
     private renderBody(): JSX.Element {
+        // Always force Landing phase when this function is called for a space view
+        if (window.location.href.includes(this.props.space.roomId)) {
+            if (this.state.phase !== Phase.Landing) {
+                console.log("Force setting phase to Landing in renderBody");
+                this.setState({ phase: Phase.Landing });
+            }
+        }
+
         switch (this.state.phase) {
             case Phase.Landing:
                 if (this.state.myMembership === KnownMembership.Join) {
@@ -750,7 +1233,29 @@ export default class SpaceRoomView extends React.PureComponent<IProps, IState> {
         }
     }
 
+    // Override component updates to ensure we stay in landing phase when viewing a space
+    public componentDidUpdate(prevProps: IProps, prevState: IState): void {
+        // Check if we're viewing our space
+        if (window.location.href.includes(this.props.space.roomId)) {
+            // If we're not in landing phase, reset to it
+            if (this.state.phase !== Phase.Landing) {
+                console.log("Force setting phase to Landing in componentDidUpdate");
+                this.setState({ phase: Phase.Landing });
+            }
+        }
+    }
+
+    // Override the render method to inject additional checks
     public render(): React.ReactNode {
+        // Check if the URL contains our space ID but we're not in landing phase
+        if (window.location.href.includes(this.props.space.roomId) &&
+            this.state.phase !== Phase.Landing) {
+            // Force reset to landing phase
+            setTimeout(() => {
+                this.setState({ phase: Phase.Landing });
+            }, 0);
+        }
+
         const rightPanel =
             this.state.showRightPanel && this.state.phase === Phase.Landing ? (
                 <RightPanel
