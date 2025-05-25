@@ -198,7 +198,7 @@ export interface IConfigOptions {
     /**
      * Configuration for OIDC dynamic registration where a static OIDC client is not configured.
      */
-    oidc_metadata?: {
+    oidc_client?: {
         client_uri?: string;
         logo_uri?: string;
         tos_uri?: string;
@@ -207,6 +207,11 @@ export interface IConfigOptions {
     };
 
     modules?: string[];
+    
+    /**
+     * URL for fetching AI provider data for autocomplete suggestions
+     */
+    ai_providers_api_url?: string;
 }
 
 export interface ISsoRedirectOptions {

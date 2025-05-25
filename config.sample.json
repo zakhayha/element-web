@@ -1,7 +1,7 @@
 {
     "default_server_config": {
         "m.homeserver": {
-            "base_url": "http://staging.iluvatar.tech"
+            "base_url": "http://staging.iluvatar.tech:8050"
         },
         "m.identity_server": {
             "base_url": "https://vector.im"
@@ -47,5 +47,6 @@
         "participant_limit": 8,
         "brand": "Element Call"
     },
-    "map_style_url": "https://api.maptiler.com/maps/streets/style.json?key=fU3vlMsMn4Jb6dnEIFsx"
+    "map_style_url": "https://api.maptiler.com/maps/streets/style.json?key=fU3vlMsMn4Jb6dnEIFsx",
+    "ai_providers_api_url": "http://staging.iluvatar.tech:8050/api/llm/providers"
 }
