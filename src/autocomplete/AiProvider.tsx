@@ -16,8 +16,8 @@ import { ICompletion, ISelectionRange } from "./Autocompleter";
 import SdkConfig from "../SdkConfig";
 import { MatrixClientPeg } from "../MatrixClientPeg";
 
-// Match @a, @r, or @ai
-const AI_MENTION_REGEX = /\B@(a|r|ai)\S*/g;
+// Match @ followed by any letters (more flexible than the original regex)
+const AGENT_MENTION_REGEX = /\B@([a-zA-Z]\w*)/g;
 
 interface AiProviderInfo {
     id: string;
@@ -32,7 +32,7 @@ interface AiProviderInfo {
 
 /**
  * AI Provider for autocomplete
- * This provider shows up when typing "@a", "@r", or "@ai" in the chat
+ * This provider shows up when typing "@" followed by any letters in the chat
  */
 export default class AiProvider extends AutocompleteProvider {
     private room: Room;
@@ -48,7 +48,7 @@ export default class AiProvider extends AutocompleteProvider {
      */
     constructor(room: Room, renderingType?: TimelineRenderingType) {
         super({
-            commandRegex: AI_MENTION_REGEX,
+            commandRegex: AGENT_MENTION_REGEX,
             renderingType,
         });
 
@@ -60,7 +60,7 @@ export default class AiProvider extends AutocompleteProvider {
             {
                 id: "loading",
                 name: "Loading...",
-                description: "Loading AI providers...",
+                description: "Loading agent providers...",
                 provider_type: "",
                 api_key_required: false,
                 api_base_url: "",
@@ -299,15 +299,36 @@ export default class AiProvider extends AutocompleteProvider {
     }
 
     /**
-     * Get name for the section header
+     * Enhanced filtering function to match providers based on query
      */
-    getName(): string {
-        // Return "AI" as the section title
-        return "AI";
+    private matchesQuery(provider: AiProviderInfo, query: string): boolean {
+        if (!query) return true;
+        
+        const lowerQuery = query.toLowerCase();
+        
+        // Check multiple fields for matches
+        return (
+            provider.id.toLowerCase().includes(lowerQuery) ||
+            provider.name.toLowerCase().includes(lowerQuery) ||
+            provider.provider_type.toLowerCase().includes(lowerQuery) ||
+            provider.description.toLowerCase().includes(lowerQuery) ||
+            // Check if query matches the start of any word in the name
+            provider.name.toLowerCase().split(' ').some(word => word.startsWith(lowerQuery)) ||
+            // Check if query matches the start of the provider ID
+            provider.id.toLowerCase().startsWith(lowerQuery)
+        );
     }
 
     /**
-     * Get completions for AI providers when typing "@a", "@r", or "@ai"
+     * Get name for the section header
+     */
+    getName(): string {
+        // Return "Agent" as the section title
+        return "Agent";
+    }
+
+    /**
+     * Get completions for AI providers when typing "@" followed by letters
      * @param rawQuery - Raw query text
      * @param selection - Selection range in the input
      * @param force - Whether to force completions
@@ -323,21 +344,12 @@ export default class AiProvider extends AutocompleteProvider {
 
         // Get the full matched text
         const fullMatch = command?.[0];
+        const capturedGroup = command?.[1]; // This is the part after @
 
-        // Check if the match starts with one of our trigger patterns
-        if (fullMatch && (
-            fullMatch.toLowerCase().startsWith("@a") ||
-            fullMatch.toLowerCase().startsWith("@r") ||
-            fullMatch.toLowerCase().startsWith("@ai")
-        )) {
-            // Extract query after the trigger
-            let query = "";
-
-            if (fullMatch.toLowerCase().startsWith("@ai")) {
-                query = fullMatch.substring(3).toLowerCase();
-            } else {
-                query = fullMatch.substring(2).toLowerCase();
-            }
+        // Check if we have a valid match
+        if (fullMatch && capturedGroup) {
+            // The query is everything after the @
+            const query = capturedGroup.toLowerCase();
 
             // If we're in a loading state, fetch providers if not already loading
             if (this.isLoadingState() && !this.isLoading) {
@@ -352,7 +364,7 @@ export default class AiProvider extends AutocompleteProvider {
                     component: (
                         <PillCompletion
                             title="Loading..."
-                            description="Loading AI providers..."
+                            description="Loading agent providers..."
                         />
                     ),
                     range: range!,
@@ -368,15 +380,13 @@ export default class AiProvider extends AutocompleteProvider {
                     continue;
                 }
                 
-                // Filter by query if any
-                if (query && !provider.id.includes(query) &&
-                    !provider.name.toLowerCase().includes(query) &&
-                    !provider.provider_type.toLowerCase().includes(query)) {
+                // Skip inactive providers
+                if (!provider.is_active) {
                     continue;
                 }
 
-                // Skip inactive providers
-                if (!provider.is_active) {
+                // Filter by query using enhanced matching
+                if (!this.matchesQuery(provider, query)) {
                     continue;
                 }
 
@@ -407,7 +417,7 @@ export default class AiProvider extends AutocompleteProvider {
                     component: (
                         <PillCompletion
                             title="No providers available"
-                            description="No AI providers match your query"
+                            description={`No agent providers match "${query}"`}
                         />
                     ),
                     range: range!,
