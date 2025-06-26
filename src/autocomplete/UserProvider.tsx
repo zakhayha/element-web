@@ -52,7 +52,7 @@ export default class UserProvider extends AutocompleteProvider {
         });
         this.room = room;
         this.matcher = new QueryMatcher<RoomMember>([], {
-            keys: ["name", "rawDisplayName"], 
+            keys: ["name", "rawDisplayName"],
             funcs: [
                 (obj) => obj.userId.slice(1), // index by user id minus the leading '@'
                 (obj) => obj.userId, // Also match on the full userId
@@ -116,17 +116,17 @@ export default class UserProvider extends AutocompleteProvider {
         const fullMatch = command?.[0];
         // Log the current query for debugging
         console.log("User autocomplete - query:", fullMatch);
-        
+
         // Relaxed matching: don't require @ symbol, and allow single character queries
         if (fullMatch) {
             // Don't include the '@' in our search query - it's only used as a way to trigger completion
             const query = fullMatch.startsWith("@") ? fullMatch.substring(1) : fullMatch;
             console.log("User autocomplete - processed query:", query);
-            
+
             // Match and log results for debugging
             const matches = this.matcher.match(query, limit);
             console.log("User autocomplete - matches count:", matches.length);
-            
+
             return matches.map((user) => {
                 const description = UserIdentifierCustomisations.getDisplayUserIdentifier?.(user.userId, {
                     roomId: this.room.roomId,
@@ -166,30 +166,30 @@ export default class UserProvider extends AutocompleteProvider {
         }
 
         const currentUserId = MatrixClientPeg.safeGet().credentials.userId;
-        
+
         // Get all joined members and log for debugging
         const joinedMembers = this.room.getJoinedMembers();
         console.log("User autocomplete - joined members count:", joinedMembers.length);
-        
+
         // Get all members regardless of membership to ensure we have users
         const allMembers = this.room.currentState.getMembers();
         console.log("User autocomplete - all members count:", allMembers.length);
-        
+
         // Use joined members first, but fall back to all members if joined is empty
         if (joinedMembers.length > 0) {
             this.users = joinedMembers.filter(({ userId }) => userId !== currentUserId);
         } else {
             // Fall back to getting members by membership filter if getJoinedMembers returns empty
-            this.users = allMembers.filter(member => 
+            this.users = allMembers.filter(member =>
                 member.membership === 'join' && member.userId !== currentUserId);
         }
-        
+
         // Include invited members in either case
         this.users = this.users.concat(this.room.getMembersWithMembership(KnownMembership.Invite));
 
         // Log the final user list for debugging
         console.log("User autocomplete - final users count:", this.users.length);
-        
+
         this.users = sortBy(this.users, (member) => 1e20 - lastSpoken[member.userId] || 1e20);
 
         this.matcher.setObjects(this.users);

@@ -1,7 +1,7 @@
 {
     "default_server_config": {
         "m.homeserver": {
-            "base_url": "http://staging.iluvatar.tech:8050"
+            "base_url": "http://staging.iluvatar.tech:80"
         },
         "m.identity_server": {
             "base_url": "https://vector.im"
