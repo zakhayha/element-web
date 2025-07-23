@@ -18,6 +18,7 @@ import OverflowIcon from "@vector-im/compound-design-tokens/assets/web/icons/ove
 import NotificationIcon from "@vector-im/compound-design-tokens/assets/web/icons/notifications-solid";
 import NotificationOffIcon from "@vector-im/compound-design-tokens/assets/web/icons/notifications-off-solid";
 import CheckIcon from "@vector-im/compound-design-tokens/assets/web/icons/check";
+import LockIcon from "@vector-im/compound-design-tokens/assets/web/icons/lock-solid";
 import { type Room } from "matrix-js-sdk/src/matrix";
 
 import { _t } from "../../../../languageHandler";
@@ -115,6 +116,13 @@ function MoreOptionsMenu({ vm, setMenuOpen }: MoreOptionsMenuProps): JSX.Element
                 onSelect={vm.toggleLowPriority}
                 onClick={(evt) => evt.stopPropagation()}
                 hideChevron={true}
+            />
+            <ToggleMenuItem
+                checked={vm.isPersonal}
+                Icon={LockIcon}
+                label={_t("room|context_menu|personal")}
+                onSelect={vm.togglePersonal}
+                onClick={(evt) => evt.stopPropagation()}
             />
             {vm.canInvite && (
                 <MenuItem

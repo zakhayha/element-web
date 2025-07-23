@@ -20,15 +20,25 @@ import dis from "../../dispatcher/dispatcher";
  * @param tagId The tag to invert
  */
 export function tagRoom(room: Room, tagId: TagID): void {
-    if (tagId === DefaultTagID.Favourite || tagId === DefaultTagID.LowPriority) {
-        const inverseTag = tagId === DefaultTagID.Favourite ? DefaultTagID.LowPriority : DefaultTagID.Favourite;
+    if (tagId === DefaultTagID.Favourite || tagId === DefaultTagID.LowPriority || tagId === DefaultTagID.Personal) {
+        let inverseTag: TagID | null = null;
+
+        if (tagId === DefaultTagID.Favourite) {
+            inverseTag = DefaultTagID.LowPriority;
+        } else if (tagId === DefaultTagID.LowPriority) {
+            // Low priority conflicts with both Favourite and Personal
+            const roomTags = RoomListStore.instance.getTagsForRoom(room);
+            if (roomTags.includes(DefaultTagID.Favourite)) {
+                inverseTag = DefaultTagID.Favourite;
+            } else if (roomTags.includes(DefaultTagID.Personal)) {
+                inverseTag = DefaultTagID.Personal;
+            }
+        } else if (tagId === DefaultTagID.Personal) {
+            inverseTag = DefaultTagID.LowPriority;
+        }
+
         const isApplied = RoomListStore.instance.getTagsForRoom(room).includes(tagId);
         const removeTag = isApplied ? tagId : inverseTag;
-        const addTag = isApplied ? null : tagId;
-        dis.dispatch(RoomListActions.tagRoom(room.client, room, removeTag, addTag, 0));
-    } else if (tagId === DefaultTagID.Personal) {
-        const isApplied = RoomListStore.instance.getTagsForRoom(room).includes(tagId);
-        const removeTag = isApplied ? tagId : null;
         const addTag = isApplied ? null : tagId;
         dis.dispatch(RoomListActions.tagRoom(room.client, room, removeTag, addTag, 0));
     } else {

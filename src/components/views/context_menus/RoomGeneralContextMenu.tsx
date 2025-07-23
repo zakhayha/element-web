@@ -97,19 +97,19 @@ export interface RoomGeneralContextMenuProps extends IContextMenuProps {
  * Room context menu accessible via the room list.
  */
 export const RoomGeneralContextMenu: React.FC<RoomGeneralContextMenuProps> = ({
-    room,
-    onFinished,
-    onPostFavoriteClick,
-    onPostLowPriorityClick,
-    onPostInviteClick,
-    onPostCopyLinkClick,
-    onPostSettingsClick,
-    onPostLeaveClick,
-    onPostForgetClick,
-    onPostMarkAsReadClick,
-    onPostMarkAsUnreadClick,
-    ...props
-}) => {
+                                                                                  room,
+                                                                                  onFinished,
+                                                                                  onPostFavoriteClick,
+                                                                                  onPostLowPriorityClick,
+                                                                                  onPostInviteClick,
+                                                                                  onPostCopyLinkClick,
+                                                                                  onPostSettingsClick,
+                                                                                  onPostLeaveClick,
+                                                                                  onPostForgetClick,
+                                                                                  onPostMarkAsReadClick,
+                                                                                  onPostMarkAsUnreadClick,
+                                                                                  ...props
+                                                                              }) => {
     const cli = useContext(MatrixClientContext);
     const roomTags = useEventEmitterState(RoomListStore.instance, LISTS_UPDATE_EVENT, () =>
         RoomListStore.instance.getTagsForRoom(room),
@@ -136,8 +136,23 @@ export const RoomGeneralContextMenu: React.FC<RoomGeneralContextMenuProps> = ({
 
     const onTagRoom = (ev: ButtonEvent, tagId: TagID): void => {
         if (!cli) return;
-        if (tagId === DefaultTagID.Favourite || tagId === DefaultTagID.LowPriority) {
-            const inverseTag = tagId === DefaultTagID.Favourite ? DefaultTagID.LowPriority : DefaultTagID.Favourite;
+        if (tagId === DefaultTagID.Favourite || tagId === DefaultTagID.LowPriority || tagId === DefaultTagID.Personal) {
+            let inverseTag: TagID | null = null;
+
+            if (tagId === DefaultTagID.Favourite) {
+                inverseTag = DefaultTagID.LowPriority;
+            } else if (tagId === DefaultTagID.LowPriority) {
+                // Low priority conflicts with both Favourite and Personal
+                const roomTags = RoomListStore.instance.getTagsForRoom(room);
+                if (roomTags.includes(DefaultTagID.Favourite)) {
+                    inverseTag = DefaultTagID.Favourite;
+                } else if (roomTags.includes(DefaultTagID.Personal)) {
+                    inverseTag = DefaultTagID.Personal;
+                }
+            } else if (tagId === DefaultTagID.Personal) {
+                inverseTag = DefaultTagID.LowPriority;
+            }
+
             const isApplied = RoomListStore.instance.getTagsForRoom(room).includes(tagId);
             const removeTag = isApplied ? tagId : inverseTag;
             const addTag = isApplied ? null : tagId;

@@ -12,6 +12,7 @@ export const enum FilterKey {
     PeopleFilter,
     RoomsFilter,
     LowPriorityFilter,
+    PersonalFilter,
     MentionsFilter,
     InvitesFilter,
 }

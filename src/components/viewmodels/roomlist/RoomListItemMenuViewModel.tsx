@@ -38,6 +38,10 @@ export interface RoomListItemMenuViewState {
      */
     isFavourite: boolean;
     /**
+     * Whether the room is a personal room.
+     */
+    isPersonal: boolean;
+    /**
      * Can invite other user's in the room.
      */
     canInvite: boolean;
@@ -89,6 +93,10 @@ export interface RoomListItemMenuViewState {
      */
     toggleLowPriority: () => void;
     /**
+     * Toggle the room as personal.
+     */
+    togglePersonal: () => void;
+    /**
      * Invite other users in the room.
      * @param evt
      */
@@ -117,6 +125,7 @@ export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewSt
 
     const isDm = Boolean(DMRoomMap.shared().getUserIdForRoomId(room.roomId));
     const isFavourite = Boolean(roomTags[DefaultTagID.Favourite]);
+    const isPersonal = Boolean(roomTags[DefaultTagID.Personal]);
     const isArchived = Boolean(roomTags[DefaultTagID.Archived]);
 
     const showMoreOptionsMenu = hasAccessToOptionsMenu(room);
@@ -163,6 +172,8 @@ export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewSt
 
     const toggleLowPriority = useCallback((): void => tagRoom(room, DefaultTagID.LowPriority), [room]);
 
+    const togglePersonal = useCallback((): void => tagRoom(room, DefaultTagID.Personal), [room]);
+
     const invite = useCallback(
         (evt: Event): void => {
             dispatcher.dispatch({
@@ -200,6 +211,7 @@ export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewSt
         showMoreOptionsMenu,
         showNotificationMenu,
         isFavourite,
+        isPersonal,
         canInvite,
         canCopyRoomLink,
         canMarkAsRead,
@@ -212,6 +224,7 @@ export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewSt
         markAsUnread,
         toggleFavorite,
         toggleLowPriority,
+        togglePersonal,
         invite,
         copyRoomLink,
         leaveRoom,

@@ -91,6 +91,7 @@ export const TAG_ORDER: TagID[] = [
     DefaultTagID.Untagged,
     DefaultTagID.Conference,
     DefaultTagID.LowPriority,
+    DefaultTagID.Personal,
     DefaultTagID.ServerNotice,
     DefaultTagID.Suggested,
     // DefaultTagID.Archived isn't here any more: we don't show it at all.
@@ -406,6 +407,11 @@ const TAG_AESTHETICS: TagAestheticsMap = {
     },
     [DefaultTagID.LowPriority]: {
         sectionLabel: _td("common|low_priority"),
+        isInvite: false,
+        defaultHidden: false,
+    },
+    [DefaultTagID.Personal]: {
+        sectionLabel: _td("common|personal"),
         isInvite: false,
         defaultHidden: false,
     },
