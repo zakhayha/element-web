@@ -26,6 +26,11 @@ export function tagRoom(room: Room, tagId: TagID): void {
         const removeTag = isApplied ? tagId : inverseTag;
         const addTag = isApplied ? null : tagId;
         dis.dispatch(RoomListActions.tagRoom(room.client, room, removeTag, addTag, 0));
+    } else if (tagId === DefaultTagID.Personal) {
+        const isApplied = RoomListStore.instance.getTagsForRoom(room).includes(tagId);
+        const removeTag = isApplied ? tagId : null;
+        const addTag = isApplied ? null : tagId;
+        dis.dispatch(RoomListActions.tagRoom(room.client, room, removeTag, addTag, 0));
     } else {
         logger.warn(`Unexpected tag ${tagId} applied to ${room.roomId}`);
     }

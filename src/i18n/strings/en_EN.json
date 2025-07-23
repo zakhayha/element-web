@@ -1929,6 +1929,7 @@
             "mark_unread": "Mark as unread",
             "notifications_default": "Match default setting",
             "notifications_mute": "Mute room",
+            "personal": "Personal room",
             "title": "Room options",
             "unfavourite": "Favourited"
         },

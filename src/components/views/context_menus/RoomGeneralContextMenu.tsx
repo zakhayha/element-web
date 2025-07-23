@@ -167,6 +167,16 @@ export const RoomGeneralContextMenu: React.FC<RoomGeneralContextMenuProps> = ({
         />
     );
 
+    const isPersonal = roomTags.includes(DefaultTagID.Personal);
+    const personalOption: JSX.Element = (
+        <IconizedContextMenuCheckbox
+            onClick={wrapHandler((ev) => onTagRoom(ev, DefaultTagID.Personal), undefined, true)}
+            active={isPersonal}
+            label={_t("room|context_menu|personal")}
+            iconClassName="mx_RoomGeneralContextMenu_iconPersonal"
+        />
+    );
+
     let inviteOption: JSX.Element | null = null;
     if (room.canInvite(cli.getUserId()!) && !isDm && shouldShowComponent(UIComponent.InviteUsers)) {
         inviteOption = (
@@ -295,6 +305,7 @@ export const RoomGeneralContextMenu: React.FC<RoomGeneralContextMenuProps> = ({
                     <>
                         {favoriteOption}
                         {lowPriorityOption}
+                        {personalOption}
                         {inviteOption}
                         {copyLinkOption}
                         {settingsOption}
