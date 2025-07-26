@@ -70,7 +70,7 @@ export class PersonalRoomManager {
         // Check if this is actually an invite or join
         if (member.membership === KnownMembership.Invite || member.membership === KnownMembership.Join) {
             logger.log(`Personal room ${room.roomId} has new member ${member.userId}, removing Personal tag`);
-            
+
             // Remove the Personal tag since the room is no longer private
             this.removePersonalTag(room);
         }
@@ -102,7 +102,7 @@ export class PersonalRoomManager {
         // Check member count - should only be the user (and potentially AI bots)
         const members = room.getJoinedMembers();
         const currentUserId = this.matrixClient.getUserId();
-        
+
         // Count non-bot members (excluding the current user)
         const humanMembers = members.filter(member => {
             if (member.userId === currentUserId) return false;

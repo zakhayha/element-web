@@ -1,0 +1,154 @@
+/*
+Copyright 2024 New Vector Ltd.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+.mx_AIToggleButton {
+    /* Perfect circle button */
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    max-width: 30px !important;
+    max-height: 30px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: #333333 !important;
+    transition: background-color 0.2s ease !important;
+    margin: 0 4px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    overflow: hidden !important;
+
+    /* Remove any default button styling */
+    outline: none !important;
+    box-shadow: none !important;
+
+    /* Default gray state */
+    background-color: #d1d5db !important;
+
+    &.mx_AIToggleButton_enabled {
+        /* Green state when enabled */
+        background-color: #4ade80 !important;
+        color: #333333 !important;
+
+        &:hover {
+            background-color: #22c55e !important;
+        }
+    }
+
+    /* Light mode hover for gray state */
+    &:not(.mx_AIToggleButton_enabled):hover {
+        background-color: #e5e7eb !important;
+    }
+
+    /* Remove any pseudo-elements that might create extra circles */
+    &::before,
+    &::after {
+        display: none !important;
+    }
+}
+
+/* Dark mode specific styles */
+.mx_Theme_dark .mx_AIToggleButton {
+    /* Dark gray state */
+    background-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+
+    &.mx_AIToggleButton_enabled {
+        background-color: #4ade80 !important;
+        color: #1f2937 !important;
+
+        &:hover {
+            background-color: #22c55e !important;
+        }
+    }
+
+    &:not(.mx_AIToggleButton_enabled):hover {
+        background-color: #6b7280 !important;
+    }
+}
+
+.mx_AIToggleButton_icon {
+    /* Remove the icon styling since we're using text content */
+    &::before {
+        display: none;
+    }
+}
+
+.mx_MessageComposer_wysiwyg {
+    .mx_AIToggleButton {
+        /* Perfect circle button - same as regular mode */
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        min-height: 30px !important;
+        max-width: 30px !important;
+        max-height: 30px !important;
+        border-radius: 50% !important;
+        border: none !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+        color: #333333 !important;
+        transition: background-color 0.2s ease !important;
+        margin: 0 4px !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: hidden !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background-color: #d1d5db !important;
+
+        &.mx_AIToggleButton_enabled {
+            background-color: #4ade80 !important;
+            color: #333333 !important;
+
+            &:hover {
+                background-color: #22c55e !important;
+            }
+        }
+
+        &:not(.mx_AIToggleButton_enabled):hover {
+            background-color: #e5e7eb !important;
+        }
+
+        /* Remove any pseudo-elements */
+        &::before,
+        &::after {
+            display: none !important;
+        }
+    }
+}
+
+/* Dark mode for wysiwyg composer */
+.mx_Theme_dark .mx_MessageComposer_wysiwyg .mx_AIToggleButton {
+    background-color: #4b5563 !important;
+    color: #f3f4f6 !important;
+
+    &.mx_AIToggleButton_enabled {
+        background-color: #4ade80 !important;
+        color: #1f2937 !important;
+
+        &:hover {
+            background-color: #22c55e !important;
+        }
+    }
+
+    &:not(.mx_AIToggleButton_enabled):hover {
+        background-color: #6b7280 !important;
+    }
+}

@@ -125,8 +125,8 @@ export interface IBaseSetting<T extends SettingValueType = SettingValueType> {
     displayName?:
         | TranslationKey
         | Partial<{
-              [level in SettingLevel]: TranslationKey;
-          }>;
+        [level in SettingLevel]: TranslationKey;
+    }>;
 
     // Optional description which will be shown as microCopy under SettingsFlags
     description?: TranslationKey | (() => ReactNode);
@@ -295,11 +295,11 @@ export interface Settings {
     "deviceNotificationsEnabled": IBaseSetting<boolean>;
     "notificationSound": IBaseSetting<
         | {
-              name: string;
-              type: string;
-              size: number;
-              url: string;
-          }
+        name: string;
+        type: string;
+        size: number;
+        url: string;
+    }
         | false
     >;
     "notificationBodyEnabled": IBaseSetting<boolean>;

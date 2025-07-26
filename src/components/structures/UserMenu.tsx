@@ -278,16 +278,16 @@ export default class UserMenu extends React.Component<IProps, IState> {
                     )}
                     {SettingsStore.getValue(UIFeature.Registration)
                         ? _t(
-                              "auth|create_account_prompt",
-                              {},
-                              {
-                                  a: (sub) => (
-                                      <AccessibleButton kind="link_inline" onClick={this.onRegisterClick}>
-                                          {sub}
-                                      </AccessibleButton>
-                                  ),
-                              },
-                          )
+                            "auth|create_account_prompt",
+                            {},
+                            {
+                                a: (sub) => (
+                                    <AccessibleButton kind="link_inline" onClick={this.onRegisterClick}>
+                                        {sub}
+                                    </AccessibleButton>
+                                ),
+                            },
+                        )
                         : null}
                 </div>
             );

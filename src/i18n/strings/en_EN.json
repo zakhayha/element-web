@@ -605,7 +605,9 @@
         "video": "Video",
         "video_room": "Video room",
         "view_message": "View message",
-        "warning": "Warning"
+        "warning": "Warning",
+        "toggle_ai_off": "Toggle AI off",
+        "toggle_ai_on": "Toggle AI on"
     },
     "composer": {
         "autocomplete": {

@@ -31,6 +31,7 @@ import { useDispatcher } from "../../../hooks/useDispatcher";
 import { chromeFileInputFix } from "../../../utils/BrowserWorkarounds";
 import IconizedContextMenu, { IconizedContextMenuOptionList } from "../context_menus/IconizedContextMenu";
 import { EmojiButton } from "./EmojiButton";
+import { AIToggleButton } from "./AIToggleButton";
 import { filterBoolean } from "../../../utils/arrays";
 import { useSettingValue } from "../../../hooks/useSettings";
 import AccessibleButton, { type ButtonEvent } from "../elements/AccessibleButton";
@@ -79,6 +80,7 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
             ) : (
                 emojiButton(props)
             ),
+            aiToggleButton(),
         ];
         moreButtons = [
             uploadButton(), // props passed via UploadButtonContext
@@ -98,6 +100,7 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
             ) : (
                 emojiButton(props)
             ),
+            aiToggleButton(),
             uploadButton(), // props passed via UploadButtonContext
         ];
         moreButtons = [
@@ -149,6 +152,15 @@ function emojiButton(props: IProps): ReactElement {
             key="emoji_button"
             addEmoji={props.addEmoji}
             menuPosition={props.menuPosition}
+            className="mx_MessageComposer_button"
+        />
+    );
+}
+
+function aiToggleButton(): ReactElement {
+    return (
+        <AIToggleButton
+            key="ai_toggle_button"
             className="mx_MessageComposer_button"
         />
     );
