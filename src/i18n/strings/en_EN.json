@@ -1977,6 +1977,7 @@
             },
             "room_is_public": "This room is public"
         },
+        "personal_private": "This is a private personal room",
         "header_avatar_open_settings_label": "Open room settings",
         "header_face_pile_tooltip": "People",
         "header_untrusted_label": "Untrusted",

@@ -81,6 +81,7 @@ import {
 } from "./utils/tokens/tokens";
 import { TokenRefresher } from "./utils/oidc/TokenRefresher";
 import { checkBrowserSupport } from "./SupportedBrowser";
+import { PersonalRoomManager } from "./stores/PersonalRoomManager";
 
 const HOMESERVER_URL_KEY = "mx_hs_url";
 const ID_SERVER_URL_KEY = "mx_is_url";
@@ -1047,6 +1048,9 @@ async function startMatrixClient(
     // being exposed to the user.
     Mjolnir.sharedInstance().start();
 
+    // Start PersonalRoomManager to handle privacy behavior for personal rooms
+    PersonalRoomManager.getInstance().start(client);
+
     if (startSyncing) {
         // The client might want to populate some views with events from the
         // index (e.g. the FilePanel), therefore initialize the event index
@@ -1171,6 +1175,7 @@ export function stopMatrixClient(unsetClient = true): void {
     ActiveWidgetStore.instance.stop();
     IntegrationManagers.sharedInstance().stopWatching();
     Mjolnir.sharedInstance().stop();
+    PersonalRoomManager.getInstance().stop();
     DeviceListener.sharedInstance().stop();
     DMRoomMap.shared()?.stop();
     EventIndexPeg.stop();

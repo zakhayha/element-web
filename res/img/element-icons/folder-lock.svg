@@ -1,0 +1,14 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Folder base -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M3 6C3 4.34315 4.34315 3 6 3H9.17157C9.70201 3 10.2107 3.21071 10.5858 3.58579L12 5H18C19.6569 5 21 6.34315 21 8V18C21 19.6569 19.6569 21 18 21H6C4.34315 21 3 19.6569 3 18V6Z" fill="currentColor"/>
+  
+  <!-- Lock body -->
+  <rect x="10" y="12" width="8" height="6" rx="1" fill="white" stroke="currentColor" stroke-width="0.5"/>
+  
+  <!-- Lock shackle -->
+  <path d="M12 12V10.5C12 9.67157 12.6716 9 13.5 9H14.5C15.3284 9 16 9.67157 16 10.5V12" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Lock keyhole -->
+  <circle cx="14" cy="14.5" r="0.8" fill="currentColor"/>
+  <rect x="13.7" y="14.5" width="0.6" height="1.5" fill="currentColor"/>
+</svg>

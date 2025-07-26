@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 import { useTypedEventEmitter } from "../../../hooks/useEventEmitter";
 import { useDmMember, usePresence, type Presence } from "../../views/avatars/WithPresenceIndicator";
+import { PersonalRoomManager } from "../../../stores/PersonalRoomManager";
 
 export interface RoomAvatarViewState {
     /**
@@ -26,6 +27,10 @@ export interface RoomAvatarViewState {
      */
     isVideoRoom: boolean;
     /**
+     * Whether the room is a private Personal room (only user + AI).
+     */
+    isPersonalPrivate: boolean;
+    /**
      * The presence of the user in the DM room.
      * If null, the user is not in a DM room or presence is not enabled.
      */
@@ -41,10 +46,11 @@ export function useRoomAvatarViewModel(room: Room): RoomAvatarViewState {
     const roomMember = useDmMember(room);
     const presence = usePresence(room, roomMember);
     const isPublic = useIsPublic(room);
+    const isPersonalPrivate = PersonalRoomManager.getInstance().isPersonalRoomPrivate(room);
 
-    const hasDecoration = isPublic || isVideoRoom || presence !== null;
+    const hasDecoration = isPublic || isVideoRoom || presence !== null || isPersonalPrivate;
 
-    return { hasDecoration, isPublic, isVideoRoom, presence };
+    return { hasDecoration, isPublic, isVideoRoom, isPersonalPrivate, presence };
 }
 
 /**

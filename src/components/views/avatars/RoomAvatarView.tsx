@@ -10,6 +10,7 @@ import { type Room } from "matrix-js-sdk/src/matrix";
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
 import VideoIcon from "@vector-im/compound-design-tokens/assets/web/icons/video-call-solid";
 import OnlineOrUnavailableIcon from "@vector-im/compound-design-tokens/assets/web/icons/presence-solid-8x8";
+import LockIcon from "@vector-im/compound-design-tokens/assets/web/icons/lock-solid";
 import OfflineIcon from "@vector-im/compound-design-tokens/assets/web/icons/presence-outline-8x8";
 import BusyIcon from "@vector-im/compound-design-tokens/assets/web/icons/presence-strikethrough-8x8";
 import classNames from "classnames";
@@ -41,7 +42,7 @@ export function RoomAvatarView({ room }: RoomAvatarViewProps): JSX.Element {
                 className={classNames("mx_RoomAvatarView_RoomAvatar", {
                     // Presence indicator and video/public icons don't have the same size
                     // We use different masks
-                    mx_RoomAvatarView_RoomAvatar_icon: vm.isVideoRoom || vm.isPublic,
+                    mx_RoomAvatarView_RoomAvatar_icon: vm.isVideoRoom || vm.isPublic || vm.isPersonalPrivate,
                     mx_RoomAvatarView_RoomAvatar_presence: Boolean(vm.presence),
                 })}
                 size="32px"
@@ -65,6 +66,15 @@ export function RoomAvatarView({ room }: RoomAvatarViewProps): JSX.Element {
                     className="mx_RoomAvatarView_icon"
                     color="var(--cpd-color-icon-tertiary)"
                     aria-label={_t("room|video_room")}
+                />
+            )}
+            {vm.isPersonalPrivate && (
+                <LockIcon
+                    width="16px"
+                    height="16px"
+                    className="mx_RoomAvatarView_icon"
+                    color="var(--cpd-color-icon-tertiary)"
+                    aria-label={_t("room|personal_private")}
                 />
             )}
             {vm.presence && <PresenceDecoration presence={vm.presence} />}
