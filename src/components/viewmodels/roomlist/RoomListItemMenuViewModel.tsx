@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from "react";
-import { type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
+import { type Room } from "matrix-js-sdk/src/matrix";
 
 import { useMatrixClientContext } from "../../../contexts/MatrixClientContext";
 import { useEventEmitterState } from "../../../hooks/useEventEmitter";
@@ -18,6 +18,7 @@ import { NotificationLevel } from "../../../stores/notifications/NotificationLev
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import { UIComponent } from "../../../settings/UIFeature";
 import dispatcher from "../../../dispatcher/dispatcher";
+import RoomListStore, { LISTS_UPDATE_EVENT } from "../../../stores/room-list/RoomListStore";
 import { clearRoomNotification, setMarkedUnreadState } from "../../../utils/notifications";
 import PosthogTrackers from "../../../PosthogTrackers";
 import { tagRoom } from "../../../utils/room/tagRoom";
@@ -120,13 +121,16 @@ export interface RoomListItemMenuViewState {
 
 export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewState {
     const matrixClient = useMatrixClientContext();
-    const roomTags = useEventEmitterState(room, RoomEvent.Tags, () => room.tags);
+    // Listen to RoomListStore for tag changes instead of room.tags
+    const roomTagsArray = useEventEmitterState(RoomListStore.instance, LISTS_UPDATE_EVENT, () =>
+        RoomListStore.instance.getTagsForRoom(room),
+    );
     const { level: notificationLevel } = useUnreadNotifications(room);
 
     const isDm = Boolean(DMRoomMap.shared().getUserIdForRoomId(room.roomId));
-    const isFavourite = Boolean(roomTags[DefaultTagID.Favourite]);
-    const isPersonal = Boolean(roomTags[DefaultTagID.Personal]);
-    const isArchived = Boolean(roomTags[DefaultTagID.Archived]);
+    const isFavourite = roomTagsArray.includes(DefaultTagID.Favourite);
+    const isPersonal = roomTagsArray.includes(DefaultTagID.Personal);
+    const isArchived = roomTagsArray.includes(DefaultTagID.Archived);
 
     const showMoreOptionsMenu = hasAccessToOptionsMenu(room);
     const showNotificationMenu = hasAccessToNotificationMenu(room, matrixClient.isGuest(), isArchived);

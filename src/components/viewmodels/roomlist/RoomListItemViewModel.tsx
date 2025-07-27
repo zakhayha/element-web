@@ -24,6 +24,7 @@ import { NotificationStateEvents } from "../../../stores/notifications/Notificat
 import DMRoomMap from "../../../utils/DMRoomMap";
 import { MessagePreviewStore } from "../../../stores/room-list/MessagePreviewStore";
 import { useMessagePreviewToggle } from "./useMessagePreviewToggle";
+import RoomListStore, { LISTS_UPDATE_EVENT } from "../../../stores/room-list/RoomListStore";
 
 export interface RoomListItemViewState {
     /**
@@ -80,8 +81,11 @@ export interface RoomListItemViewState {
  */
 export function useRoomListItemViewModel(room: Room): RoomListItemViewState {
     const matrixClient = useMatrixClientContext();
-    const roomTags = useEventEmitterState(room, RoomEvent.Tags, () => room.tags);
-    const isArchived = Boolean(roomTags[DefaultTagID.Archived]);
+    // Listen to RoomListStore for tag changes instead of room.tags
+    const roomTagsArray = useEventEmitterState(RoomListStore.instance, LISTS_UPDATE_EVENT, () =>
+        RoomListStore.instance.getTagsForRoom(room),
+    );
+    const isArchived = roomTagsArray.includes(DefaultTagID.Archived);
     const name = useEventEmitterState(room, RoomEvent.Name, () => room.name);
 
     const notificationState = useMemo(() => RoomNotificationStateStore.instance.getRoomState(room), [room]);
