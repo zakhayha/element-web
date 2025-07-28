@@ -117,13 +117,15 @@ function MoreOptionsMenu({ vm, setMenuOpen }: MoreOptionsMenuProps): JSX.Element
                 onClick={(evt) => evt.stopPropagation()}
                 hideChevron={true}
             />
-            <ToggleMenuItem
-                checked={vm.isPersonal}
-                Icon={LockIcon}
-                label={_t("room|context_menu|personal")}
-                onSelect={vm.togglePersonal}
-                onClick={(evt) => evt.stopPropagation()}
-            />
+            {vm.showPersonalOption && (
+                <ToggleMenuItem
+                    checked={vm.isPersonal}
+                    Icon={LockIcon}
+                    label={_t("room|context_menu|personal")}
+                    onSelect={vm.togglePersonal}
+                    onClick={(evt) => evt.stopPropagation()}
+                />
+            )}
             {vm.canInvite && (
                 <MenuItem
                     Icon={UserAddIcon}

@@ -29,6 +29,7 @@ describe("<RoomListItemMenuView />", () => {
         showNotificationMenu: true,
         isFavourite: true,
         isPersonal: true,
+        showPersonalOption: true,
         canInvite: true,
         canMarkAsUnread: true,
         canMarkAsRead: true,

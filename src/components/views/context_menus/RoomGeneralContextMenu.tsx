@@ -183,14 +183,44 @@ export const RoomGeneralContextMenu: React.FC<RoomGeneralContextMenuProps> = ({
     );
 
     const isPersonal = roomTags.includes(DefaultTagID.Personal);
-    const personalOption: JSX.Element = (
+
+    // Only show personal option when room has no human members (user + AI only)
+    const shouldShowPersonalOption = (() => {
+        const joinedMembers = room.getJoinedMembers();
+        const currentUserId = cli.getUserId();
+
+        // Count human members (excluding current user and AI assistants)
+        const humanMembers = joinedMembers.filter(member => {
+            if (member.userId === currentUserId) return false;
+
+            // AI detection patterns
+            const userId = member.userId;
+            const aiPatterns = [
+                /^@ai[_-]?assistant/i,
+                /^@bot[_-]/i,
+                /^@assistant[_-]/i,
+                /^@chatbot/i,
+                /^@gpt/i,
+                /^@claude/i,
+                /^@groq_/i,
+                /^@llama/i,
+            ];
+
+            const isAI = aiPatterns.some(pattern => pattern.test(userId));
+            return !isAI; // Return true for human members
+        });
+
+        return humanMembers.length === 0;
+    })();
+
+    const personalOption: JSX.Element | null = shouldShowPersonalOption ? (
         <IconizedContextMenuCheckbox
             onClick={wrapHandler((ev) => onTagRoom(ev, DefaultTagID.Personal), undefined, true)}
             active={isPersonal}
             label={_t("room|context_menu|personal")}
             iconClassName="mx_RoomGeneralContextMenu_iconPersonal"
         />
-    );
+    ) : null;
 
     let inviteOption: JSX.Element | null = null;
     if (room.canInvite(cli.getUserId()!) && !isDm && shouldShowComponent(UIComponent.InviteUsers)) {

@@ -5,7 +5,7 @@
  * Please see LICENSE files in the repository root for full details.
  */
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { type Room } from "matrix-js-sdk/src/matrix";
 
 import { useMatrixClientContext } from "../../../contexts/MatrixClientContext";
@@ -42,6 +42,10 @@ export interface RoomListItemMenuViewState {
      * Whether the room is a personal room.
      */
     isPersonal: boolean;
+    /**
+     * Whether the personal room option should be shown in the menu.
+     */
+    showPersonalOption: boolean;
     /**
      * Can invite other user's in the room.
      */
@@ -132,6 +136,38 @@ export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewSt
     const isPersonal = roomTagsArray.includes(DefaultTagID.Personal);
     const isArchived = roomTagsArray.includes(DefaultTagID.Archived);
 
+    // Determine if the Personal room option should be shown
+    // Show it only when the room could potentially be personal (0 human members)
+    const showPersonalOption = useMemo(() => {
+        const joinedMembers = room.getJoinedMembers();
+        const currentUserId = matrixClient.getUserId();
+
+        // Count human members (excluding current user and AI assistants)
+        const humanMembers = joinedMembers.filter(member => {
+            if (member.userId === currentUserId) return false;
+
+            // Simple AI detection patterns (matching PersonalRoomManager logic)
+            const userId = member.userId;
+            const aiPatterns = [
+                /^@ai[_-]?assistant/i,
+                /^@bot[_-]/i,
+                /^@assistant[_-]/i,
+                /^@chatbot/i,
+                /^@gpt/i,
+                /^@claude/i,
+                /^@groq_/i,
+                /^@llama/i,
+            ];
+
+            const isAI = aiPatterns.some(pattern => pattern.test(userId));
+            return !isAI; // Return true for human members
+        });
+
+        // Only show personal option if there are 0 human members
+        // This means the room could be personal (user + AI only)
+        return humanMembers.length === 0;
+    }, [room, matrixClient]);
+
     const showMoreOptionsMenu = hasAccessToOptionsMenu(room);
     const showNotificationMenu = hasAccessToNotificationMenu(room, matrixClient.isGuest(), isArchived);
 
@@ -216,6 +252,7 @@ export function useRoomListItemMenuViewModel(room: Room): RoomListItemMenuViewSt
         showNotificationMenu,
         isFavourite,
         isPersonal,
+        showPersonalOption,
         canInvite,
         canCopyRoomLink,
         canMarkAsRead,
