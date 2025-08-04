@@ -57,14 +57,32 @@ export class TemporaryRoomManager {
      * Checks if a room is a temporary room
      */
     public isTemporaryRoom(roomId: string): boolean {
+        // Primary method: Check if this room is registered as the current temporary room
+        if (this.currentTemporaryRoomId === roomId) {
+            return true;
+        }
+
+        // Secondary method: Check room name pattern as fallback
         const client = MatrixClientPeg.get();
         if (!client) return false;
 
         const room = client.getRoom(roomId);
         if (!room) return false;
 
-        const temporaryState = room.currentState.getStateEvents("m.room.temporary", "");
-        return temporaryState && temporaryState.getContent().is_temporary;
+        // Check if room name indicates it's temporary
+        const roomName = room.name;
+        if (roomName && roomName.includes("Temporary AI Chat")) {
+            return true;
+        }
+
+        // Tertiary fallback: check for the state event (if it exists)
+        try {
+            const temporaryState = room.currentState.getStateEvents("m.room.temporary", "");
+            return temporaryState && temporaryState.getContent().is_temporary;
+        } catch (error) {
+            // If state event check fails, return false
+            return false;
+        }
     }
 
     /**

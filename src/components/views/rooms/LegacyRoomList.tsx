@@ -230,40 +230,60 @@ const UntaggedAuxButton: React.FC<IAuxButtonProps> = ({ tabIndex }) => {
         const client = MatrixClientPeg.safeGet();
 
         try {
-            // Create temporary room with specific settings
+            // Create temporary room with simplified settings to avoid permission issues
             const roomId = await createRoom(client, {
                 createOpts: {
                     name: "Temporary AI Chat",
                     topic: "Temporary room for AI conversation",
                     preset: Preset.PrivateChat,
                     visibility: Visibility.Private,
-                    // Disable invites for temporary rooms
+                    // Simplified power levels - use Matrix defaults with minimal overrides
                     power_level_content_override: {
-                        invite: 100, // Only admins (creator) can invite
-                        events_default: 0,
-                        users_default: 0,
-                        state_default: 50,
+                        invite: 100, // Only room creator can invite others
+                        // Remove other overrides to use Matrix defaults
+                        // This prevents permission conflicts
                     },
                 },
                 spinner: false,
-                encryption: true,
+                encryption: false, // Disable encryption to avoid sync issues
                 andView: true, // Immediately navigate to the room
                 inlineErrors: true,
             });
 
             if (roomId) {
-                // Mark this room as temporary by adding a custom state event
-                await client.sendStateEvent(roomId, "m.room.temporary" as any, {
-                    is_temporary: true,
-                    created_at: Date.now(),
-                    purpose: "ai_chat"
-                }, "");
-
-                // Register this room with the temporary room manager
+                // Register this room with the temporary room manager immediately
                 temporaryRoomManager.setCurrentTemporaryRoom(roomId);
+                console.log("Temporary room created and registered:", roomId);
+
+                // Skip state event entirely to avoid any blocking issues
+                // The TemporaryRoomManager registry is sufficient for identification
             }
         } catch (error) {
-            // Silently handle errors - room creation will show its own error UI
+            console.error("Failed to create temporary room:", error);
+
+            // Try a fallback approach with minimal settings
+            try {
+                console.log("Attempting fallback room creation...");
+                const fallbackRoomId = await createRoom(client, {
+                    createOpts: {
+                        name: "Temporary AI Chat",
+                        preset: Preset.PrivateChat,
+                        visibility: Visibility.Private,
+                    },
+                    spinner: false,
+                    encryption: false,
+                    andView: true,
+                    inlineErrors: true,
+                });
+
+                if (fallbackRoomId) {
+                    temporaryRoomManager.setCurrentTemporaryRoom(fallbackRoomId);
+                    console.log("Fallback room created successfully:", fallbackRoomId);
+                }
+            } catch (fallbackError) {
+                console.error("Fallback room creation also failed:", fallbackError);
+                // Let the createRoom function handle error display
+            }
         }
     };
 
