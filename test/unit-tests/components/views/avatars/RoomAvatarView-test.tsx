@@ -36,6 +36,7 @@ describe("<RoomAvatarView />", () => {
             hasDecoration: true,
             isPublic: true,
             isVideoRoom: true,
+            isPersonalPrivate: false,
             presence: null,
         };
 
