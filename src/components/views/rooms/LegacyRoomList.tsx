@@ -6,8 +6,11 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import { EventType, type Room, RoomType } from "matrix-js-sdk/src/matrix";
+import { EventType, type Room, RoomType, Preset, Visibility } from "matrix-js-sdk/src/matrix";
 import React, { type JSX, type ComponentType, createRef, type ReactComponentElement, type SyntheticEvent } from "react";
+
+import createRoom from "../../../createRoom";
+import { temporaryRoomManager } from "../../../stores/TemporaryRoomManager";
 
 import { type IState as IRovingTabIndexState, RovingTabIndexProvider } from "../../../accessibility/RovingTabIndex.tsx";
 import MatrixClientContext from "../../../contexts/MatrixClientContext.tsx";
@@ -88,6 +91,7 @@ export const TAG_ORDER: TagID[] = [
     DefaultTagID.Invite,
     DefaultTagID.Favourite,
     DefaultTagID.DM,
+    DefaultTagID.Temporary,
     DefaultTagID.Untagged,
     DefaultTagID.Conference,
     DefaultTagID.LowPriority,
@@ -219,6 +223,50 @@ const UntaggedAuxButton: React.FC<IAuxButtonProps> = ({ tabIndex }) => {
     const videoRoomsEnabled = useFeatureEnabled("feature_video_rooms");
     const elementCallVideoRoomsEnabled = useFeatureEnabled("feature_element_call_video_rooms");
 
+    const createTemporaryRoom = async (e: React.MouseEvent): Promise<void> => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const client = MatrixClientPeg.safeGet();
+
+        try {
+            // Create temporary room with specific settings
+            const roomId = await createRoom(client, {
+                createOpts: {
+                    name: "Temporary AI Chat",
+                    topic: "Temporary room for AI conversation",
+                    preset: Preset.PrivateChat,
+                    visibility: Visibility.Private,
+                    // Disable invites for temporary rooms
+                    power_level_content_override: {
+                        invite: 100, // Only admins (creator) can invite
+                        events_default: 0,
+                        users_default: 0,
+                        state_default: 50,
+                    },
+                },
+                spinner: false,
+                encryption: true,
+                andView: true, // Immediately navigate to the room
+                inlineErrors: true,
+            });
+
+            if (roomId) {
+                // Mark this room as temporary by adding a custom state event
+                await client.sendStateEvent(roomId, "m.room.temporary" as any, {
+                    is_temporary: true,
+                    created_at: Date.now(),
+                    purpose: "ai_chat"
+                }, "");
+
+                // Register this room with the temporary room manager
+                temporaryRoomManager.setCurrentTemporaryRoom(roomId);
+            }
+        } catch (error) {
+            // Silently handle errors - room creation will show its own error UI
+        }
+    };
+
     let contextMenuContent: JSX.Element | undefined;
     if (menuDisplayed && activeSpace) {
         const canAddRooms = activeSpace.currentState.maySendStateEvent(
@@ -309,6 +357,15 @@ const UntaggedAuxButton: React.FC<IAuxButtonProps> = ({ tabIndex }) => {
                                 PosthogTrackers.trackInteraction("WebRoomListRoomsSublistPlusMenuCreateRoomItem", e);
                             }}
                         />
+                        <IconizedContextMenuOption
+                            label={_t("action|new_temporary_room")}
+                            iconClassName="mx_LegacyRoomList_iconNewTemporaryRoom"
+                            onClick={(e) => {
+                                closeMenu();
+                                createTemporaryRoom(e);
+                                PosthogTrackers.trackInteraction("WebRoomListRoomsSublistPlusMenuCreateRoomItem", e);
+                            }}
+                        />
                         {videoRoomsEnabled && (
                             <IconizedContextMenuOption
                                 label={_t("action|new_video_room")}
@@ -396,6 +453,11 @@ const TAG_AESTHETICS: TagAestheticsMap = {
     },
     [DefaultTagID.Conference]: {
         sectionLabel: _td("voip|metaspace_video_rooms|conference_room_section"),
+        isInvite: false,
+        defaultHidden: false,
+    },
+    [DefaultTagID.Temporary]: {
+        sectionLabel: _td("room_list|temporary_rooms"),
         isInvite: false,
         defaultHidden: false,
     },

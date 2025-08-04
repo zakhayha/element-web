@@ -15,6 +15,7 @@ import PreferencesIcon from "@vector-im/compound-design-tokens/assets/web/icons/
 import SettingsIcon from "@vector-im/compound-design-tokens/assets/web/icons/settings";
 import VideoCallIcon from "@vector-im/compound-design-tokens/assets/web/icons/video-call";
 
+
 import { _t } from "../../../../languageHandler";
 import { Flex } from "../../../utils/Flex";
 import {
@@ -147,6 +148,14 @@ function ComposeMenu({ vm }: ComposeMenuProps): JSX.Element {
             />
             {vm.canCreateRoom && (
                 <MenuItem Icon={RoomIcon} label={_t("action|new_room")} onSelect={vm.createRoom} hideChevron={true} />
+            )}
+            {vm.canCreateTemporaryRoom && (
+                <MenuItem
+                    Icon={RoomIcon}
+                    label={_t("action|new_temporary_room")}
+                    onSelect={vm.createTemporaryRoom}
+                    hideChevron={true}
+                />
             )}
             {vm.canCreateVideoRoom && (
                 <MenuItem

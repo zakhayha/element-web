@@ -95,6 +95,7 @@
         "minimise": "Minimise",
         "new_message": "New message",
         "new_room": "New room",
+        "new_temporary_room": "New temporary room",
         "new_video_room": "New video room",
         "next": "Next",
         "no": "No",
@@ -2177,7 +2178,8 @@
         },
         "space_menu_label": "%(spaceName)s menu",
         "sublist_options": "List options",
-        "suggested_rooms_heading": "Suggested Rooms"
+        "suggested_rooms_heading": "Suggested Rooms",
+        "temporary_rooms": "Temporary Rooms"
     },
     "room_settings": {
         "access": {

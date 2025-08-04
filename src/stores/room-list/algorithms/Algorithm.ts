@@ -563,6 +563,13 @@ export class Algorithm extends EventEmitter {
     private getTagsOfJoinedRoom(room: Room): TagID[] {
         let tags = Object.keys(room.tags || {});
 
+        // Check if this is a temporary room first
+        const temporaryState = room.currentState.getStateEvents("m.room.temporary", "");
+        if (temporaryState && temporaryState.getContent().is_temporary) {
+            tags = [DefaultTagID.Temporary];
+            return tags; // Temporary rooms should only be in the temporary section
+        }
+
         if (tags.length === 0) {
             // Check to see if it's a DM if it isn't anything else
             if (DMRoomMap.shared().getUserIdForRoomId(room.roomId)) {

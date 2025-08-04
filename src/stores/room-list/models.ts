@@ -17,6 +17,7 @@ export enum DefaultTagID {
     Conference = "im.vector.fake.conferences",
     ServerNotice = "m.server_notice",
     Suggested = "im.vector.fake.suggested",
+    Temporary = "im.vector.fake.temporary",
 }
 
 export const OrderedDefaultTagIDs = [
@@ -24,6 +25,7 @@ export const OrderedDefaultTagIDs = [
     DefaultTagID.Favourite,
     DefaultTagID.DM,
     DefaultTagID.Conference,
+    DefaultTagID.Temporary,
     DefaultTagID.Untagged,
     DefaultTagID.LowPriority,
     DefaultTagID.Personal,

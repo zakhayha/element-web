@@ -80,6 +80,10 @@ export interface RoomListHeaderViewState {
      */
     canCreateVideoRoom: boolean;
     /**
+     * Whether the user can create temporary rooms
+     */
+    canCreateTemporaryRoom: boolean;
+    /**
      * Whether the user can invite in the active space
      */
     canInviteInSpace: boolean;
@@ -101,6 +105,11 @@ export interface RoomListHeaderViewState {
      * Create a video room
      */
     createVideoRoom: () => void;
+    /**
+     * Create a temporary room
+     * @param e - The click event
+     */
+    createTemporaryRoom: (e: Event) => void;
     /**
      * Open the active space home
      */
@@ -129,6 +138,7 @@ export function useRoomListHeaderViewModel(): RoomListHeaderViewState {
 
     const canCreateRoom = hasCreateRoomRights(matrixClient, activeSpace);
     const canCreateVideoRoom = useFeatureEnabled("feature_video_rooms") && canCreateRoom;
+    const canCreateTemporaryRoom = canCreateRoom; // Temporary rooms have same permissions as regular rooms
     const displayComposeMenu = canCreateRoom;
     const displaySpaceMenu = isSpaceRoom;
     const canInviteInSpace = Boolean(
@@ -164,6 +174,16 @@ export function useRoomListHeaderViewModel(): RoomListHeaderViewState {
         }
     }, [activeSpace, elementCallVideoRoomsEnabled]);
 
+    const createTemporaryRoom = useCallback(
+        (e: Event) => {
+            // For now, create a regular room but we could add special temporary room logic here
+            // This could include setting specific room settings like auto-deletion, limited history, etc.
+            createRoom(activeSpace);
+            PosthogTrackers.trackInteraction("WebRoomListHeaderPlusMenuCreateRoomItem", e);
+        },
+        [activeSpace],
+    );
+
     const openSpaceHome = useCallback(() => {
         // openSpaceHome is only available when there is an active space
         if (!activeSpace) return;
@@ -198,11 +218,13 @@ export function useRoomListHeaderViewModel(): RoomListHeaderViewState {
         displaySpaceMenu,
         canCreateRoom,
         canCreateVideoRoom,
+        canCreateTemporaryRoom,
         canInviteInSpace,
         canAccessSpaceSettings,
         createChatRoom,
         createRoom: createRoomMemoized,
         createVideoRoom,
+        createTemporaryRoom,
         openSpaceHome,
         inviteInSpace,
         openSpacePreferences,
