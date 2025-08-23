@@ -63,6 +63,7 @@ let instanceCount = 0;
 interface ISendButtonProps {
     onClick: (ev: ButtonEvent) => void;
     title?: string; // defaults to something generic
+    disabled?: boolean; // whether the button is disabled
 }
 
 function SendButton(props: ISendButtonProps): JSX.Element {
@@ -72,6 +73,7 @@ function SendButton(props: ISendButtonProps): JSX.Element {
             onClick={props.onClick}
             title={props.title ?? _t("composer|send_button_title")}
             data-testid="sendmessagebtn"
+            disabled={props.disabled}
         />
     );
 }
@@ -635,7 +637,8 @@ export class MessageComposer extends React.Component<IProps, IState> {
             />,
         );
 
-        const showSendButton = canSendMessages && (!this.state.isComposerEmpty || this.state.haveRecording);
+        const showSendButton = canSendMessages;
+        const isSendButtonDisabled = this.state.isComposerEmpty && !this.state.haveRecording;
 
         const classes = classNames({
             "mx_MessageComposer": true,
@@ -687,6 +690,7 @@ export class MessageComposer extends React.Component<IProps, IState> {
                                                 ? _t("composer|send_button_voice_message")
                                                 : undefined
                                         }
+                                        disabled={isSendButtonDisabled}
                                     />
                                 )}
                             </div>

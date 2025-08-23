@@ -17,7 +17,7 @@ Please see LICENSE files in the repository root for full details.
     box-sizing: border-box;
     height: 100%;
     contain: strict;
-    background-color: var(--cpd-color-bg-canvas-default);
+    background-color: $iluvatar-color-chat-side-left; /* Match left sidebar background color - using the lighter color */
 
     .mx_RoomView_MessageList {
         padding: 14px 18px; /* top and bottom is 4px smaller to balance with the padding set above */
@@ -63,4 +63,38 @@ Please see LICENSE files in the repository root for full details.
 .mx_RightPanel .mx_RoomView_messagePanelSpinner {
     order: 2;
     margin: auto;
+}
+
+/* Style specific buttons in the right panel to match left sidebar */
+.mx_RightPanel .mx_RightPanel_roomSummaryButton,
+.mx_RightPanel .mx_RightPanel_notifsButton,
+.mx_RightPanel .mx_RightPanel_threadsButton,
+.mx_RightPanel .mx_RightPanel_pinnedMessagesButton,
+.mx_RightPanel .mx_RightPanel_timelineCardButton {
+    background-color: transparent !important; /* No background by default */
+}
+
+.mx_RightPanel .mx_RightPanel_roomSummaryButton:hover,
+.mx_RightPanel .mx_RightPanel_notifsButton:hover,
+.mx_RightPanel .mx_RightPanel_threadsButton:hover,
+.mx_RightPanel .mx_RightPanel_pinnedMessagesButton:hover,
+.mx_RightPanel .mx_RightPanel_timelineCardButton:hover {
+    background-color: $panel-actions !important; /* Show background only on hover */
+}
+
+/* Remove background from all other buttons in right panel */
+.mx_RightPanel button,
+.mx_RightPanel [role="button"],
+.mx_RightPanel .cpd-button,
+.mx_RightPanel [role="menuitemcheckbox"],
+.mx_RightPanel [role="menuitem"] {
+    background-color: transparent !important;
+}
+
+.mx_RightPanel button:hover,
+.mx_RightPanel [role="button"]:hover,
+.mx_RightPanel .cpd-button:hover,
+.mx_RightPanel [role="menuitemcheckbox"]:hover,
+.mx_RightPanel [role="menuitem"]:hover {
+    background-color: $panel-actions !important;
 }

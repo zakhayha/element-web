@@ -10,7 +10,7 @@ import React, { type JSX } from "react";
 import { useContext, useState } from "react";
 
 import AutoHideScrollbar from "./AutoHideScrollbar";
-import { getHomePageUrl } from "../../utils/pages";
+// import { getHomePageUrl } from "../../utils/pages";
 import { _t, _tDom } from "../../languageHandler";
 import SdkConfig from "../../SdkConfig";
 import dis from "../../dispatcher/dispatcher";
@@ -23,7 +23,7 @@ import { useEventEmitter } from "../../hooks/useEventEmitter";
 import MatrixClientContext, { useMatrixClientContext } from "../../contexts/MatrixClientContext";
 import MiniAvatarUploader, { AVATAR_SIZE } from "../views/elements/MiniAvatarUploader";
 import PosthogTrackers from "../../PosthogTrackers";
-import EmbeddedPage from "./EmbeddedPage";
+// import EmbeddedPage from "./EmbeddedPage";
 
 const onClickSendDm = (ev: ButtonEvent): void => {
     PosthogTrackers.trackInteraction("WebHomeCreateChatButton", ev);
@@ -89,11 +89,11 @@ const UserWelcomeTop: React.FC = () => {
 const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
     const cli = useMatrixClientContext();
     const config = SdkConfig.get();
-    const pageUrl = getHomePageUrl(config, cli);
-
-    if (pageUrl) {
-        return <EmbeddedPage className="mx_HomePage" url={pageUrl} scrollbar={true} />;
-    }
+    // Force show default home page with 3 buttons instead of embedded page
+    // const pageUrl = getHomePageUrl(config, cli);
+    // if (pageUrl) {
+    //     return <EmbeddedPage className="mx_HomePage" url={pageUrl} scrollbar={true} />;
+    // }
 
     let introSection: JSX.Element;
     if (justRegistered || !OwnProfileStore.instance.getHttpAvatarUrl(parseInt(AVATAR_SIZE, 10))) {

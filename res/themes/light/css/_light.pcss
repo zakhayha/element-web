@@ -390,6 +390,20 @@ body {
     padding: 10px; /* Adjust padding as needed */
     transition: background-color 0.3s ease; /* Smooth transition on toggle */
 }
+
+/* When sidebar is collapsed, align dark mode toggle to the left */
+.mx_SpacePanel.collapsed .parent-container {
+
+    padding-left: 8px !important;
+}
+
+/* When sidebar is not collapsed, center the dark mode toggle */
+.mx_SpacePanel:not(.collapsed) .parent-container {
+    justify-content: start !important;
+    padding-left: 0 !important;
+    margin: 12px 14px 4px 18px;
+    padding-right: 0 !important;
+}
 .custom_child_component{
     width: 32px;
     height: 32px;

@@ -300,6 +300,17 @@ Please see LICENSE files in the repository root for full details.
         background-color: var(--cpd-color-icon-on-solid-primary);
         content: "";
     }
+
+    /* Disabled state styling */
+    &[aria-disabled="true"] {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background-color: var(--cpd-color-bg-subtle-secondary);
+
+        &::before {
+            background-color: var(--cpd-color-icon-disabled);
+        }
+    }
 }
 
 .mx_MatrixChat_useCompactLayout {

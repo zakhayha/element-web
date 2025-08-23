@@ -50,6 +50,10 @@ export class PersonalRoomManager {
             (window as any).mxRoomListStore = RoomListStore;
             (window as any).mxMatrixClient = matrixClient;
             (window as any).tagRoom = tagRoom;
+            // Add helpful debugging functions
+            (window as any).checkPersonalRooms = () => this.checkAllPersonalRooms();
+            (window as any).checkRoomById = (roomId: string) => this.forceCheckRoom(roomId);
+            (window as any).forceCheckAllRooms = () => this.forceCheckAllRooms();
         }
 
         logger.log("PersonalRoomManager started - listening for membership events");
@@ -111,31 +115,36 @@ export class PersonalRoomManager {
             members: room.getJoinedMembers().map(m => ({ userId: m.userId, membership: m.membership }))
         });
 
-        // Handle membership changes
-        if (membership === KnownMembership.Invite || membership === KnownMembership.Join) {
-            // Someone joined or was invited
-            if (isCurrentlyPersonal) {
-                logger.log(`Personal room ${roomId} has new member ${userId}, checking if conversion needed`);
+        // Handle membership changes - use setTimeout to ensure room state is fully updated
+        setTimeout(() => {
+            const updatedRoomTags = RoomListStore.instance.getTagsForRoom(room);
+            const isStillPersonal = updatedRoomTags.includes(DefaultTagID.Personal);
+            
+            if (membership === KnownMembership.Invite || membership === KnownMembership.Join) {
+                // Someone joined or was invited
+                if (isStillPersonal) {
+                    logger.log(`Personal room ${roomId} has new member ${userId}, checking if conversion needed`);
 
-                // Check if the room should still be considered personal
-                const shouldBePersonal = this.shouldRoomBePersonal(room);
-                logger.log(`PersonalRoomManager: Should room ${roomId} remain personal? ${shouldBePersonal}`);
+                    // Check if the room should still be considered personal
+                    const shouldBePersonal = this.shouldRoomBePersonal(room);
+                    logger.log(`PersonalRoomManager: Should room ${roomId} remain personal? ${shouldBePersonal}`);
 
-                if (!shouldBePersonal) {
-                    logger.log(`Converting personal room ${roomId} to regular room due to new member ${userId}`);
-                    this.removePersonalTag(room);
+                    if (!shouldBePersonal) {
+                        logger.log(`Converting personal room ${roomId} to regular room due to new member ${userId}`);
+                        this.removePersonalTag(room);
+                    }
+                }
+            } else if (membership === KnownMembership.Leave || membership === KnownMembership.Ban) {
+                // Someone left or was banned
+                if (!isStillPersonal) {
+                    // Check if this room should become personal again
+                    if (this.shouldRoomBePersonal(room)) {
+                        logger.log(`Converting regular room ${roomId} back to personal room after member ${userId} left`);
+                        this.addPersonalTag(room);
+                    }
                 }
             }
-        } else if (membership === KnownMembership.Leave || membership === KnownMembership.Ban) {
-            // Someone left or was banned
-            if (!isCurrentlyPersonal) {
-                // Check if this room should become personal again
-                if (this.shouldRoomBePersonal(room)) {
-                    logger.log(`Converting regular room ${roomId} back to personal room after member ${userId} left`);
-                    this.addPersonalTag(room);
-                }
-            }
-        }
+        }, 500); // Delay to ensure room state is fully updated
     };
 
     private onNewMember = (event: MatrixEvent, state: any, member: any): void => {
@@ -285,6 +294,46 @@ export class PersonalRoomManager {
     }
 
     /**
+     * Force check all rooms immediately - useful for debugging
+     */
+    public forceCheckAllRooms(): void {
+        if (!this.matrixClient) {
+            logger.warn("PersonalRoomManager: Cannot check rooms - no matrix client");
+            return;
+        }
+
+        logger.log("PersonalRoomManager: Force checking ALL rooms for personal status");
+
+        const rooms = this.matrixClient.getRooms();
+        let checkedCount = 0;
+        let convertedCount = 0;
+
+        rooms.forEach(room => {
+            const roomTags = RoomListStore.instance.getTagsForRoom(room);
+            const isCurrentlyPersonal = roomTags.includes(DefaultTagID.Personal);
+
+            checkedCount++;
+            logger.log(`PersonalRoomManager: Checking room ${room.roomId} (${room.name}) - Currently personal: ${isCurrentlyPersonal}`);
+
+            if (isCurrentlyPersonal) {
+                if (!this.shouldRoomBePersonal(room)) {
+                    logger.log(`PersonalRoomManager: Converting ${room.roomId} to regular room`);
+                    this.removePersonalTag(room);
+                    convertedCount++;
+                }
+            } else {
+                if (this.shouldRoomBePersonal(room)) {
+                    logger.log(`PersonalRoomManager: Converting ${room.roomId} to personal room`);
+                    this.addPersonalTag(room);
+                    convertedCount++;
+                }
+            }
+        });
+
+        logger.log(`PersonalRoomManager: Force check complete - checked ${checkedCount} rooms, converted ${convertedCount}`);
+    }
+
+    /**
      * Manually check and convert room types for all personal rooms
      * Useful for debugging and fixing any inconsistencies
      */
@@ -317,5 +366,43 @@ export class PersonalRoomManager {
         });
 
         logger.log(`PersonalRoomManager: Manual check complete - checked ${checkedCount} rooms, converted ${convertedCount}`);
+    }
+
+    /**
+     * Force check a specific room by ID
+     * Useful for debugging specific room conversion issues
+     */
+    public forceCheckRoom(roomId: string): void {
+        if (!this.matrixClient) {
+            logger.warn("PersonalRoomManager: Cannot check room - no matrix client");
+            return;
+        }
+
+        const room = this.matrixClient.getRoom(roomId);
+        if (!room) {
+            logger.warn(`PersonalRoomManager: Room ${roomId} not found`);
+            return;
+        }
+
+        const roomTags = RoomListStore.instance.getTagsForRoom(room);
+        const isCurrentlyPersonal = roomTags.includes(DefaultTagID.Personal);
+
+        logger.log(`PersonalRoomManager: Force checking room ${roomId} (${room.name})`);
+        logger.log(`PersonalRoomManager: Currently personal: ${isCurrentlyPersonal}`);
+        logger.log(`PersonalRoomManager: Members:`, room.getJoinedMembers().map(m => ({
+            userId: m.userId,
+            membership: m.membership,
+            isAI: this.isAIAssistant(m.userId)
+        })));
+
+        if (isCurrentlyPersonal) {
+            const shouldBePersonal = this.shouldRoomBePersonal(room);
+            logger.log(`PersonalRoomManager: Should remain personal: ${shouldBePersonal}`);
+            
+            if (!shouldBePersonal) {
+                logger.log(`PersonalRoomManager: Converting room ${roomId} to regular room`);
+                this.removePersonalTag(room);
+            }
+        }
     }
 }

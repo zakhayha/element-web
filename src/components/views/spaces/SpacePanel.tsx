@@ -149,6 +149,10 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}
     useEffect(updateNotificationState, [updateNotificationState, allRoomsInHome]);
     useEventEmitter(RoomNotificationStateStore.instance, UPDATE_STATUS_INDICATOR, updateNotificationState);
 
+    const onHomeClick = useCallback(() => {
+        defaultDispatcher.dispatch({ action: Action.ViewHomePage });
+    }, []);
+
     return (
         <MetaSpaceButton
             spaceKey={MetaSpace.Home}
@@ -160,6 +164,7 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({selected, isPanelCollapsed}
             ContextMenuComponent={HomeButtonContextMenu}
             contextMenuTooltip={_t("common|options")}
             size="32px"
+            onClick={onHomeClick}
         />
     );
 };

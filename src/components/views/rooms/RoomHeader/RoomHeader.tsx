@@ -260,10 +260,7 @@ export default function RoomHeader({
                     {/*        aria-label={_t("room|header_avatar_open_settings_label")}*/}
                     {/*    />*/}
                     {/*</WithPresenceIndicator>*/}
-                    <button
-                        aria-label={_t("right_panel|room_summary_card|title")}
-                        tabIndex={0}
-                        onClick={() => RightPanelStore.instance.showOrHidePhase(RightPanelPhases.RoomSummary)}
+                    <div
                         className="mx_RoomHeader_infoWrapper"
                     >
                         <WithPresenceIndicator room={room} size="8px">
@@ -322,7 +319,7 @@ export default function RoomHeader({
                                 )}
                             </BodyText>
                         </Box>
-                    </button>
+                    </div>
 
                     {additionalButtons?.map((props) => {
                         const label = props.label();

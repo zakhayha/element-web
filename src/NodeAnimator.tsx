@@ -92,7 +92,15 @@ export default class NodeAnimator extends React.Component<IProps> {
                     newProps.style = startStyle;
                 }
 
-                newProps.ref = (n) => this.collectNode(c.key!, n, restingStyle);
+                newProps.ref = React.createRef<HTMLElement>();
+                // Use a callback ref instead of function ref for React 19 compatibility
+                const refCallback = (n: HTMLElement | null) => {
+                    if (newProps.ref && 'current' in newProps.ref) {
+                        (newProps.ref as React.RefObject<HTMLElement>).current = n;
+                    }
+                    this.collectNode(c.key!, n, restingStyle);
+                };
+                newProps.ref = refCallback;
 
                 this.children[c.key!] = React.cloneElement(c, newProps);
             }

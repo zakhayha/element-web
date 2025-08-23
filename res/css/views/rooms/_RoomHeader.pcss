@@ -15,9 +15,10 @@ Please see LICENSE files in the repository root for full details.
     transition: all 0.2s ease;
 }
 
-.mx_RoomHeader:hover {
+/* Remove hover effect to make header non-clickable */
+/* .mx_RoomHeader:hover {
     background-color: $header-panel-bg-hover;
-}
+} */
 
 .mx_RoomHeader_infoWrapper {
     /* unset button styles */
@@ -28,7 +29,7 @@ Please see LICENSE files in the repository root for full details.
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    cursor: pointer;
+    cursor: default; /* Changed from pointer to default to make it non-clickable */
     gap: var(--cpd-space-3x);
     text-align: left;
     height: 100%;
